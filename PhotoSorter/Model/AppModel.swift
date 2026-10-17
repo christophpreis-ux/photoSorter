@@ -98,6 +98,7 @@ final class AppModel {
     var errorMessage: String?
     var showPhotosPicker = false
     var showStats = false
+    var showLightroom = false
 
     // Kombinieren
     private(set) var mergeStates: [UUID: MergeState] = [:]
@@ -150,6 +151,7 @@ final class AppModel {
         lastResult = nil
         lastPhotosDeleted = nil
         lastRecord = nil
+        lightroomDone = false
         errorMessage = nil
         phase = .scanning
         analysisTask = Task { await analyze(makeItems: items) }
@@ -216,6 +218,7 @@ final class AppModel {
         switch UserDefaults.standard.string(forKey: "openSidebar") {
         case "merge": sidebarSelection = .merge
         case "stats": sidebarSelection = .stats
+        case "lightroom": showLightroom = true
         case "preview":
             selectedPhotoID = scenes.first(where: { $0.photos.count > 2 })?.photos.first?.id
             previewPhotoID = selectedPhotoID
@@ -560,6 +563,58 @@ final class AppModel {
         lastRecord = nil
         lastResult = nil
         phase = .review
+    }
+
+    // MARK: - Lightroom
+
+    /// Nach dem Übertragen nach Lightroom (für die Schritt-Anzeige).
+    var lightroomDone = false
+
+    /// Behaltene Fotos am neuen Speicherort, jeweils mit Abschnitt.
+    func keptPhotosAfterApply() -> [(photo: PhotoItem, files: [URL], chapter: EventChapter?)] {
+        let moved = Dictionary((lastResult?.moves ?? []).map { ($0.from, $0.to) }, uniquingKeysWith: { $1 })
+        var result: [(PhotoItem, [URL], EventChapter?)] = photos
+            .filter { decisions[$0.id]?.keep != false }
+            .map { photo in
+                let chapter = sceneOfPhoto[photo.id].flatMap { id in chapters.first { $0.sceneIDs.contains(id) } }
+                return (photo, photo.files.map { moved[$0] ?? $0 }, chapter)
+            }
+        // Gespeicherte kombinierte Gruppenfotos gehören mit dazu.
+        for (sceneID, urls) in mergedFiles {
+            let chapter = chapters.first { $0.sceneIDs.contains(sceneID) }
+            for url in urls {
+                let item = PhotoItem(baseName: url.deletingPathExtension().lastPathComponent, files: [moved[url] ?? url],
+                                     primaryURL: moved[url] ?? url, captureDate: .now)
+                result.append((item, [moved[url] ?? url], chapter))
+            }
+        }
+        return result
+    }
+
+    func lightroomItems(defaultPreset: LightroomPreset?, presetForChapter: (EventChapter) -> LightroomPreset?,
+                        addKeywords: Bool) -> [LightroomItem] {
+        keptPhotosAfterApply().map { entry in
+            let preset = entry.chapter.map(presetForChapter) ?? defaultPreset
+            var keywords: [String] = []
+            if addKeywords {
+                if let chapter = entry.chapter { keywords.append(chapter.name) }
+                if entry.photo.analysis != nil { keywords.append(entry.photo.category.title) }
+            }
+            return LightroomItem(files: entry.files, preset: preset, keywords: keywords)
+        }
+    }
+
+    /// Was in Lightroom geöffnet wird: Abschnitts-Ordner (enthalten nur Behaltenes) bzw. einzelne Dateien im Hauptordner.
+    func lightroomOpenURLs() -> [URL] {
+        guard let root = folderURL?.standardizedFileURL else { return [] }
+        var folders = Set<URL>(), files: [URL] = []
+        for entry in keptPhotosAfterApply() {
+            for file in entry.files {
+                let parent = file.deletingLastPathComponent().standardizedFileURL
+                if parent.path == root.path { files.append(file) } else { folders.insert(parent) }
+            }
+        }
+        return folders.sorted { $0.path < $1.path } + files
     }
 
     func reopenSource() {

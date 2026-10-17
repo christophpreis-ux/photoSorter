@@ -34,6 +34,9 @@ struct ContentView: View {
                 }
                 .help("Ordner mit Fotos auswählen (⌘O)")
             }
+            ToolbarItem(placement: .principal) {
+                if model.phase != .idle { StepIndicator() }
+            }
             ToolbarItem(placement: .navigation) {
                 Button {
                     model.showPhotosPicker = true
@@ -61,6 +64,10 @@ struct ContentView: View {
         }
         .sheet(item: $model.compareScene) { scene in
             SceneCompareView(scene: scene)
+                .environment(model)
+        }
+        .sheet(isPresented: $model.showLightroom) {
+            LightroomExportView()
                 .environment(model)
         }
         .sheet(isPresented: $model.showPhotosPicker) {
@@ -239,6 +246,17 @@ struct AppliedView: View {
                     Text("Es wurde nichts gelöscht.")
                         .foregroundStyle(.secondary)
                 }
+                Button {
+                    model.showLightroom = true
+                } label: {
+                    Label(model.lightroomDone ? "Erneut nach Lightroom übertragen" : "Behaltene Fotos nach Lightroom übertragen",
+                          systemImage: "camera.aperture")
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                }
+                .controlSize(.extraLarge)
+                .buttonStyle(.glassProminent)
+                .tint(Theme.accent)
                 HStack {
                     Button {
                         model.revealInFinder(result.sortedPhotos > 0 || result.rejectedPhotos == 0 ? result.folder : result.rejectFolder)

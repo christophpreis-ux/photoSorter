@@ -6,6 +6,8 @@ struct SceneCard: View {
     @Environment(AppModel.self) private var model
     let scene: PhotoScene
     @Namespace private var namespace
+    /// Seite, über der gerade ein Foto gezogen wird (true = Behalten).
+    @State private var dropTarget: Bool?
 
     var body: some View {
         let kept = scene.photos
@@ -85,6 +87,12 @@ struct SceneCard: View {
         return LazyVGrid(columns: [GridItem(.adaptive(minimum: size, maximum: size), spacing: 8)], alignment: .leading, spacing: 8) {
             ForEach(photos) { photo in
                 PhotoThumbView(photo: photo, size: size)
+                    .draggable(photo.id.uuidString) {
+                        if let image = ThumbnailStore.image(for: photo) {
+                            Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
+                                .frame(width: 120, height: 90).clipShape(RoundedRectangle(cornerRadius: 7))
+                        }
+                    }
                     .matchedGeometryEffect(id: photo.id, in: namespace)
                     .transition(.asymmetric(insertion: .scale(scale: 0.85).combined(with: .opacity),
                                             removal: .opacity))
@@ -102,6 +110,28 @@ struct SceneCard: View {
         .background(keep ? Theme.keepArea : Theme.rejectArea)
         .overlay(alignment: .leading) {
             Rectangle().fill((keep ? Theme.keep : Theme.reject).opacity(0.6)).frame(width: 3)
+        }
+        .overlay {
+            if dropTarget == keep {
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(keep ? Theme.keep : Theme.reject, style: StrokeStyle(lineWidth: 2.5, dash: [7, 5]))
+                    .background((keep ? Theme.keep : Theme.reject).opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+                    .padding(4)
+                    .allowsHitTesting(false)
+            }
+        }
+        // Fotos per Drag & Drop zwischen Behalten und Aussortieren verschieben.
+        .dropDestination(for: String.self) { ids, _ in
+            let moved = scene.photos.filter { ids.contains($0.id.uuidString) }
+            guard !moved.isEmpty else { return false }
+            withAnimation(decisionAnimation) {
+                for photo in moved { model.setOverride(keep, for: photo) }
+            }
+            return true
+        } isTargeted: { targeted in
+            withAnimation(.easeOut(duration: 0.12)) {
+                if targeted { dropTarget = keep } else if dropTarget == keep { dropTarget = nil }
+            }
         }
     }
 }
