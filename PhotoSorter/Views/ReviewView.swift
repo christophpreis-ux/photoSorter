@@ -12,18 +12,7 @@ struct ReviewView: View {
             ChapterSidebar()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
         } detail: {
-            VStack(spacing: 0) {
-                ControlBar()
-                Divider()
-                HStack(spacing: 0) {
-                    ColumnHeader(title: "Behalten", count: model.keptCount, symbol: "checkmark.circle.fill", color: .green)
-                    Divider().frame(height: 22)
-                    ColumnHeader(title: "Aussortieren", count: model.rejectedCount, symbol: "xmark.bin.fill", color: .red)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-                .background(.bar)
-                Divider()
+            Group {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 14, pinnedViews: [.sectionHeaders]) {
@@ -41,9 +30,24 @@ struct ReviewView: View {
                                 }
                             }
                         }
-                        .padding(16)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
                     }
-                    .background(Color(nsColor: .underPageBackgroundColor))
+                    .background(Theme.background)
+                    // Inhalte scrollen unter dem schwebenden Glas-Panel hindurch.
+                    .safeAreaInset(edge: .top, spacing: 0) {
+                        VStack(spacing: 10) {
+                            ControlBar()
+                            HStack(spacing: 12) {
+                                ColumnHeader(title: "Behalten", count: model.keptCount, symbol: "checkmark.circle.fill", color: Theme.keep)
+                                ColumnHeader(title: "Aussortieren", count: model.rejectedCount, symbol: "xmark.bin.fill", color: Theme.reject)
+                            }
+                        }
+                        .padding(14)
+                        .glassPanel(cornerRadius: 24)
+                        .padding(.horizontal, 12)
+                        .padding(.top, 6)
+                    }
                     .onChange(of: model.selectedChapterID) { _, id in
                         guard let id else { return }
                         withAnimation { proxy.scrollTo(id, anchor: .top) }
@@ -182,13 +186,14 @@ struct ChapterHeader: View {
             } label: {
                 Label(chapter.kind.title, systemImage: "tag")
             }
-            .menuStyle(.borderedButton)
+            .menuStyle(.button)
+            .buttonStyle(.glass)
             .fixedSize()
             .help(chapter.topLabels.isEmpty ? "" : "Erkannt: " + chapter.topLabels.joined(separator: ", "))
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .glassPanel(cornerRadius: 18)
         .onAppear { name = chapter.name }
     }
 }
@@ -205,13 +210,15 @@ private struct ColumnHeader: View {
                 .foregroundStyle(color)
                 .font(.headline)
             Text("\(count)")
-                .monospacedDigit()
+                .font(.headline.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .contentTransition(.numericText())
             Spacer()
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
         .frame(maxWidth: .infinity)
+        .background(color.opacity(0.12), in: Capsule())
     }
 }
 
@@ -268,8 +275,8 @@ struct ControlBar: View {
                     .padding(.horizontal, 6)
             }
             .controlSize(.large)
-            .buttonStyle(.borderedProminent)
-            .tint(.red)
+            .buttonStyle(.glassProminent)
+            .tint(Theme.accent)
             .disabled(model.rejectedCount == 0 && !model.renameKept && !model.sortIntoChapterFolders)
             .confirmationDialog("Fotos sortieren?", isPresented: $confirm) {
                 Button("Jetzt sortieren") { model.apply() }
@@ -280,8 +287,7 @@ struct ControlBar: View {
                      + (model.renameKept ? " Dateinamen bekommen die Kategorie als Präfix." : ""))
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 6)
     }
 
     private var strictnessLabel: String {

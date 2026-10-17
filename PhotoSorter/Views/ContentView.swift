@@ -66,9 +66,10 @@ struct WelcomeView: View {
 
     var body: some View {
         VStack(spacing: 22) {
-            Image(systemName: "photo.stack")
-                .font(.system(size: 64, weight: .light))
-                .foregroundStyle(.tint)
+            Image(nsImage: NSApplication.shared.applicationIconImage)
+                .resizable()
+                .frame(width: 128, height: 128)
+                .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
             VStack(spacing: 8) {
                 Text("PhotoSorter")
                     .font(.largeTitle.bold())
@@ -83,14 +84,16 @@ struct WelcomeView: View {
                     .padding(.horizontal, 10)
                     .padding(.vertical, 4)
             }
-            .controlSize(.large)
-            .buttonStyle(.borderedProminent)
+            .controlSize(.extraLarge)
+            .buttonStyle(.glassProminent)
             Text("oder Ordner hierher ziehen · JPEG, HEIC, PNG, TIFF und RAW (CR3, NEF, ARW, DNG, RAF …)")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .padding(60)
+        .padding(48)
+        .glassPanel(cornerRadius: 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
     }
 }
 
@@ -118,8 +121,12 @@ struct AnalysisProgressView: View {
                     .foregroundStyle(.tertiary)
             }
             Button("Abbrechen", role: .cancel) { model.cancelAnalysis() }
+                .buttonStyle(.glass)
         }
+        .padding(40)
+        .glassPanel(cornerRadius: 28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
     }
 
     private var eta: String {
@@ -141,7 +148,7 @@ struct AppliedView: View {
         VStack(spacing: 20) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 60))
-                .foregroundStyle(.green)
+                .foregroundStyle(Theme.keep)
             Text("Fertig sortiert")
                 .font(.largeTitle.bold())
             if let result = model.lastResult {
@@ -174,8 +181,12 @@ struct AppliedView: View {
                     }
                 }
                 .controlSize(.large)
+                .buttonStyle(.glass)
             }
         }
+        .padding(44)
+        .glassPanel(cornerRadius: 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Theme.background)
     }
 }

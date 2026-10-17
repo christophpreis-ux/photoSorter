@@ -1,3 +1,5 @@
+<img src="icon.png" width="128" alt="PhotoSorter Icon">
+
 # PhotoSorter
 
 macOS-App (SwiftUI) zum automatischen Aussortieren von Fotos – komplett on-device mit Apple-Frameworks (Vision, ImageIO, Accelerate).
@@ -22,4 +24,4 @@ xcodegen generate
 open PhotoSorter.xcodeproj
 ```
 
-Benötigt macOS 15+ und Xcode 16+.
+Benötigt macOS 26+ (Liquid Glass) und Xcode 26+.

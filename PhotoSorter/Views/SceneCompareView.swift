@@ -64,7 +64,7 @@ struct SceneCompareView: View {
                                         ForEach(scene.photos) { photo in
                                             let keep = model.decisions[photo.id]?.keep != false
                                             Image(systemName: keep ? "checkmark.circle.fill" : "xmark.circle")
-                                                .foregroundStyle(keep ? .green : .secondary)
+                                                .foregroundStyle(keep ? Theme.keep : .secondary)
                                         }
                                     }
                                     ForEach(people) { person in
@@ -90,6 +90,7 @@ struct SceneCompareView: View {
             }
         }
         .frame(minWidth: 960, idealWidth: 1200, minHeight: 660, idealHeight: 820)
+        .background(Theme.background)
         .task {
             await withTaskGroup(of: (UUID, CGImage?).self) { group in
                 for photo in scene.photos {
@@ -135,13 +136,14 @@ private struct CompareCard: View {
                       systemImage: decision?.keep == false ? "arrow.uturn.left" : "xmark.bin")
                     .frame(maxWidth: .infinity)
             }
-            .tint(decision?.keep == false ? .green : .red)
+            .buttonStyle(.glass)
+            .tint(decision?.keep == false ? Theme.keep : Theme.reject)
         }
         .frame(width: 380 * aspect)
         .padding(10)
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12)
-            .strokeBorder(decision?.keep == false ? Color.red.opacity(0.5) : Color.green.opacity(0.6), lineWidth: 2))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14)
+            .strokeBorder(decision?.keep == false ? Theme.reject.opacity(0.55) : Theme.keep.opacity(0.65), lineWidth: 2))
     }
 
     private var aspect: CGFloat {
@@ -182,7 +184,7 @@ private struct FaceCell: View {
                 .padding(3)
             }
             .overlay(RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(good && kept ? Color.green : good ? Color.orange : Color.clear, lineWidth: 2))
+                .strokeBorder(good && kept ? Theme.keep : good ? Color.orange : Color.clear, lineWidth: 2))
             .help(good ? "Person \(person.id + 1) sieht hier gut aus" : "")
         } else {
             RoundedRectangle(cornerRadius: 8)
@@ -239,7 +241,7 @@ private struct MergePanel: View {
                             Label("Kombinierte Version erstellen", systemImage: "wand.and.stars")
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .disabled(working)
                 }
             }
@@ -296,8 +298,9 @@ private struct MergePanel: View {
                                     } label: {
                                         Label("Speichern", systemImage: "square.and.arrow.down")
                                     }
-                                    .buttonStyle(.borderedProminent)
+                                    .buttonStyle(.glassProminent)
                                     Button("Verwerfen") { self.result = nil }
+                                        .buttonStyle(.glass)
                                 }
                                 Text(candidate.base.isRawPrimary ? "Wird als 16-Bit-TIFF neben dem Original gespeichert."
                                                                   : "Wird als JPEG neben dem Original gespeichert.")
@@ -312,8 +315,8 @@ private struct MergePanel: View {
                 Text(error).foregroundStyle(.red).font(.caption)
             }
         }
-        .padding(14)
-        .background(.tint.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+        .padding(16)
+        .glassEffect(.regular.tint(Theme.accent.opacity(0.12)), in: .rect(cornerRadius: 20))
     }
 
     private var personList: String {

@@ -9,6 +9,10 @@ struct PhotoSorterApp: App {
             ContentView()
                 .environment(model)
                 .frame(minWidth: 1050, minHeight: 680)
+                .preferredColorScheme(.dark)
+                .tint(Theme.accent)
+                .containerBackground(Theme.background, for: .window)
+                .onAppear { NSApplication.shared.appearance = NSAppearance(named: .darkAqua) }
         }
         .windowToolbarStyle(.unified)
         .commands {

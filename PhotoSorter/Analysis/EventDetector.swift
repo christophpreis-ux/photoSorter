@@ -293,7 +293,7 @@ enum EventDetector {
 enum ChapterNamer {
     static func suggestName(labels: [String], photoCount: Int, averageFaces: Double) async -> String? {
         #if canImport(FoundationModels)
-        if #available(macOS 26.0, *) {
+        do {
             guard case .available = SystemLanguageModel.default.availability, !labels.isEmpty else { return nil }
             let session = LanguageModelSession(instructions: """
                 Du benennst Abschnitte eines Foto-Shootings, damit ein Fotograf sie als Ordner sortieren kann. \

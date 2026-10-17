@@ -22,8 +22,9 @@ struct SceneCard: View {
                 side(rejected, keep: false)
             }
         }
-        .background(Color(nsColor: .controlBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
-        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.separator))
+        .background(Theme.surface, in: RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Theme.stroke))
     }
 
     private func header(kept: Int) -> some View {
@@ -98,7 +99,10 @@ struct SceneCard: View {
             }
         }
         .padding(10)
-        .background((keep ? Color.green : Color.red).opacity(0.05))
+        .background(keep ? Theme.keepArea : Theme.rejectArea)
+        .overlay(alignment: .leading) {
+            Rectangle().fill((keep ? Theme.keep : Theme.reject).opacity(0.6)).frame(width: 3)
+        }
     }
 }
 
@@ -123,7 +127,8 @@ struct PhotoThumbView: View {
         }
         .frame(width: size, height: size * 0.75)
         .clipShape(RoundedRectangle(cornerRadius: 7))
-        .saturation(decision?.keep == false ? 0.55 : 1)
+        .saturation(decision?.keep == false ? 0.5 : 1)
+        .opacity(decision?.keep == false ? 0.8 : 1)
         .overlay(alignment: .topLeading) {
             if decision?.isBest == true {
                 badge(Image(systemName: "star.fill"), color: .yellow)
@@ -161,7 +166,7 @@ struct PhotoThumbView: View {
         }
         .overlay {
             RoundedRectangle(cornerRadius: 7)
-                .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 3)
+                .strokeBorder(selected ? Theme.accent : .clear, lineWidth: 3)
         }
         .shadow(color: .black.opacity(0.15), radius: 2, y: 1)
         .contentShape(Rectangle())

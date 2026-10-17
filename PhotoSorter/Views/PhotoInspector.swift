@@ -59,7 +59,7 @@ private struct PhotoDetail: View {
                 if let decision {
                     HStack(alignment: .top) {
                         Image(systemName: decision.keep ? "checkmark.circle.fill" : "xmark.bin.fill")
-                            .foregroundStyle(decision.keep ? .green : .red)
+                            .foregroundStyle(decision.keep ? Theme.keep : Theme.reject)
                         VStack(alignment: .leading) {
                             Text(decision.keep ? "Wird behalten" : "Wird aussortiert").font(.subheadline.bold())
                             Text(decision.reason).font(.callout).foregroundStyle(.secondary)
@@ -92,7 +92,7 @@ private struct PhotoDetail: View {
                                         Spacer()
                                         Label(face.eyesClosed ? "Augen zu" : "Augen offen",
                                               systemImage: face.eyesClosed ? "eye.slash.fill" : "eye.fill")
-                                            .foregroundStyle(face.eyesClosed ? .red : .green)
+                                            .foregroundStyle(face.eyesClosed ? Theme.reject : Theme.keep)
                                         if face.lookingAway {
                                             Image(systemName: "person.fill.turn.left").foregroundStyle(.orange)
                                         }
@@ -150,7 +150,7 @@ struct FaceOverlayImage: View {
                     // Gesichtsbewertungen liegen in derselben Reihenfolge wie die erkannten Gesichter.
                     let closed = index < faces.count && faces[index].eyesClosed
                     RoundedRectangle(cornerRadius: 4)
-                        .strokeBorder(closed ? Color.red : Color.green, lineWidth: 2)
+                        .strokeBorder(closed ? Theme.reject : Theme.keep, lineWidth: 2)
                         .frame(width: rect.width, height: rect.height)
                         .position(x: rect.midX, y: rect.midY)
                 }
@@ -171,7 +171,7 @@ private struct MetricRow: View {
             Label(title, systemImage: symbol)
                 .frame(width: 110, alignment: .leading)
             ProgressView(value: value)
-                .tint(value > 0.66 ? .green : value > 0.4 ? .orange : .red)
+                .tint(value > 0.66 ? Theme.keep : value > 0.4 ? .orange : Theme.reject)
             Text("\(Int(value * 100))")
                 .monospacedDigit()
                 .frame(width: 28, alignment: .trailing)
