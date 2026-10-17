@@ -74,6 +74,14 @@ final class AppModel {
     private(set) var decisions: [UUID: Decision] = [:]
     private var overrides: [UUID: Bool] = [:]
     private var sceneOfPhoto: [UUID: UUID] = [:]
+    // Vorberechnete Werte – die Oberfläche fragt sie bei jedem Neuzeichnen ab, deshalb kein Neuberechnen pro Abfrage.
+    private var sceneByID: [UUID: PhotoScene] = [:]
+    private var photoByID: [UUID: PhotoItem] = [:]
+    private var mergeCandidates: [UUID: MergeCandidate] = [:]
+    private var keptByScene: [UUID: Int] = [:]
+    private(set) var keptCount = 0
+    private(set) var rejectedCount = 0
+    private(set) var favoriteCount = 0
     /// Abschnitte des Shootings (Trauung, Sektempfang, Gruppenfotos …).
     var chapters: [EventChapter] = []
     /// Gespeicherte kombinierte Gruppenfotos je Szene – wandern beim Sortieren mit in den Abschnitts-Ordner.
@@ -148,6 +156,13 @@ final class AppModel {
         overrides = [:]
         chapters = []
         mergedFiles = [:]
+        sceneByID = [:]
+        photoByID = [:]
+        mergeCandidates = [:]
+        keptByScene = [:]
+        keptCount = 0
+        rejectedCount = 0
+        favoriteCount = 0
         mergeStates = [:]
         approvedMerges = []
         dismissedMerges = []
@@ -272,6 +287,9 @@ final class AppModel {
         evaluations = Dictionary(uniqueKeysWithValues: scenes.map { ($0.id, SelectionEngine.evaluate(scene: $0)) })
         sceneOfPhoto = [:]
         for scene in scenes { for photo in scene.photos { sceneOfPhoto[photo.id] = scene.id } }
+        sceneByID = Dictionary(uniqueKeysWithValues: scenes.map { ($0.id, $0) })
+        photoByID = Dictionary(uniqueKeysWithValues: photos.map { ($0.id, $0) })
+        favoriteCount = photos.filter(\.isFavorite).count
         mergeStates = [:]
         updateDecisions()
         detectChapters()
@@ -294,6 +312,19 @@ final class AppModel {
             all[photo.id]?.reason = "Favorit in Apple Fotos – wird immer behalten"
         }
         decisions = all
+
+        keptCount = all.values.filter(\.keep).count
+        rejectedCount = all.count - keptCount
+        keptByScene = Dictionary(uniqueKeysWithValues: scenes.map { scene in
+            (scene.id, scene.photos.filter { all[$0.id]?.keep != false }.count)
+        })
+        mergeCandidates = [:]
+        for scene in scenes {
+            if let evaluation = evaluations[scene.id],
+               let candidate = FaceMerger.candidate(scene: scene, evaluation: evaluation, decisions: all) {
+                mergeCandidates[scene.id] = candidate
+            }
+        }
     }
 
     func decision(for photo: PhotoItem) -> Decision? { decisions[photo.id] }
@@ -317,13 +348,11 @@ final class AppModel {
     var hasOverrides: Bool { !overrides.isEmpty }
 
     func scene(of photo: PhotoItem) -> PhotoScene? {
-        guard let id = sceneOfPhoto[photo.id] else { return nil }
-        return scenes.first { $0.id == id }
+        sceneOfPhoto[photo.id].flatMap { sceneByID[$0] }
     }
 
     var previewPhoto: PhotoItem? {
-        guard let id = previewPhotoID else { return nil }
-        return photos.first { $0.id == id }
+        previewPhotoID.flatMap { photoByID[$0] }
     }
 
     /// Nächstes/vorheriges Foto in der Reihenfolge der Übersicht.
@@ -335,13 +364,9 @@ final class AppModel {
     }
 
     var selectedPhoto: PhotoItem? {
-        guard let id = selectedPhotoID else { return nil }
-        return photos.first { $0.id == id }
+        selectedPhotoID.flatMap { photoByID[$0] }
     }
 
-    var keptCount: Int { decisions.values.filter(\.keep).count }
-    var rejectedCount: Int { decisions.values.filter { !$0.keep }.count }
-    var favoriteCount: Int { photos.filter(\.isFavorite).count }
 
     func filteredScenes(in chapter: EventChapter) -> [PhotoScene] {
         scenes(in: chapter).filter(passesFilter)
@@ -376,8 +401,7 @@ final class AppModel {
     }
 
     func scenes(in chapter: EventChapter) -> [PhotoScene] {
-        let ids = Set(chapter.sceneIDs)
-        return scenes.filter { ids.contains($0.id) }
+        chapter.sceneIDs.compactMap { sceneByID[$0] }
     }
 
     func chapter(of scene: PhotoScene) -> EventChapter? {
@@ -423,15 +447,16 @@ final class AppModel {
     }
 
     func photoCount(of chapter: EventChapter) -> (total: Int, kept: Int) {
-        let photos = scenes(in: chapter).flatMap(\.photos)
-        return (photos.count, photos.filter { decisions[$0.id]?.keep != false }.count)
+        chapter.sceneIDs.reduce(into: (total: 0, kept: 0)) { result, id in
+            result.total += sceneByID[id]?.photos.count ?? 0
+            result.kept += keptByScene[id] ?? 0
+        }
     }
 
     // MARK: - Gruppenfotos kombinieren
 
     func mergeCandidate(for scene: PhotoScene) -> MergeCandidate? {
-        guard let evaluation = evaluations[scene.id] else { return nil }
-        return FaceMerger.candidate(scene: scene, evaluation: evaluation, decisions: decisions)
+        mergeCandidates[scene.id]
     }
 
     /// Alle Szenen, in denen ein Gruppenfoto kombiniert werden kann.

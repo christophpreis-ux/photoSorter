@@ -84,7 +84,8 @@ struct SceneCard: View {
 
     private func side(_ photos: [PhotoItem], keep: Bool) -> some View {
         let size = model.thumbnailSize
-        return LazyVGrid(columns: [GridItem(.adaptive(minimum: size, maximum: size), spacing: 8)], alignment: .leading, spacing: 8) {
+        // Festes Raster statt verschachteltem LazyVGrid – die Größe steht sofort fest (schnell auch bei Tausenden Fotos).
+        return ThumbnailFlowLayout(itemSize: CGSize(width: size, height: size * 0.75), spacing: 8) {
             ForEach(photos) { photo in
                 PhotoThumbView(photo: photo, size: size)
                     .draggable(photo.id.uuidString) {
@@ -234,5 +235,31 @@ struct PhotoThumbView: View {
             .padding(4)
             .background(.black.opacity(0.5), in: Circle())
             .padding(4)
+    }
+}
+
+/// Einfaches Raster für gleich große Vorschaubilder.
+struct ThumbnailFlowLayout: Layout {
+    var itemSize: CGSize
+    var spacing: CGFloat
+
+    private func columns(for width: CGFloat) -> Int {
+        max(1, Int((width + spacing) / (itemSize.width + spacing)))
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? (itemSize.width + spacing) * 4
+        guard !subviews.isEmpty else { return CGSize(width: width, height: 0) }
+        let rows = (subviews.count + columns(for: width) - 1) / columns(for: width)
+        return CGSize(width: width, height: CGFloat(rows) * itemSize.height + CGFloat(rows - 1) * spacing)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let perRow = columns(for: bounds.width)
+        for (index, subview) in subviews.enumerated() {
+            let point = CGPoint(x: bounds.minX + CGFloat(index % perRow) * (itemSize.width + spacing),
+                                y: bounds.minY + CGFloat(index / perRow) * (itemSize.height + spacing))
+            subview.place(at: point, anchor: .topLeading, proposal: ProposedViewSize(itemSize))
+        }
     }
 }
