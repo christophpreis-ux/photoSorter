@@ -45,6 +45,15 @@ struct SceneCard: View {
                     .background(.tint.opacity(0.12), in: Capsule())
             }
             Spacer()
+            if model.mergeCandidate(for: scene) != nil {
+                Button {
+                    model.compareScene = scene
+                } label: {
+                    Label("Augen-zu kombinieren", systemImage: "wand.and.stars")
+                }
+                .buttonStyle(.borderless)
+                .help("Auf dem besten Foto hat jemand die Augen zu – aus einem anderen Foto der Serie kann das Gesicht übernommen werden")
+            }
             if scene.photos.count > 1 {
                 Button {
                     model.compareScene = scene
@@ -53,6 +62,17 @@ struct SceneCard: View {
                 }
                 .buttonStyle(.borderless)
             }
+            Menu {
+                Button("Neuer Abschnitt ab dieser Szene") {
+                    withAnimation { model.splitChapter(at: scene) }
+                }
+                .disabled(model.chapter(of: scene)?.sceneIDs.first == scene.id)
+            } label: {
+                Image(systemName: "ellipsis.circle")
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
         }
         .font(.subheadline)
         .padding(.horizontal, 14)

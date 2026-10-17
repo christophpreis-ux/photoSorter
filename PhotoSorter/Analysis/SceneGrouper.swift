@@ -8,6 +8,8 @@ struct GroupingSettings: Equatable {
     var sceneGap: TimeInterval = 120
     /// Feature-Print-Distanz, unter der zwei Fotos als "ähnlich" gelten.
     var similarityThreshold: Float = 0.5
+    /// Pause, ab der ein neuer Abschnitt (z. B. Trauung → Sektempfang) beginnt.
+    var chapterGap: TimeInterval = 600
 }
 
 /// Teilt die Fotos chronologisch in Szenen: Fotos landen in derselben Szene,

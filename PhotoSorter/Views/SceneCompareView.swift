@@ -37,6 +37,10 @@ struct SceneCompareView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
+                    if let candidate = model.mergeCandidate(for: scene), let evaluation {
+                        MergePanel(scene: scene, candidate: candidate, tracks: evaluation.tracks)
+                            .padding(.horizontal)
+                    }
                     ScrollView(.horizontal) {
                         HStack(alignment: .top, spacing: 14) {
                             ForEach(shown) { photo in
@@ -194,5 +198,146 @@ private struct FaceCell: View {
         let rect = CGRect(x: box.midX * w - size / 2, y: (1 - box.midY) * h - size / 2, width: size, height: size)
             .intersection(CGRect(x: 0, y: 0, width: w, height: h))
         return image.cropping(to: rect)
+    }
+}
+
+/// Kombiniert das beste Foto mit offenen Augen aus anderen Aufnahmen der Serie.
+private struct MergePanel: View {
+    @Environment(AppModel.self) private var model
+    let scene: PhotoScene
+    let candidate: MergeCandidate
+    let tracks: [PersonTrack]
+    @State private var result: MergeResult?
+    @State private var working = false
+    @State private var showOriginal = false
+    @State private var savedURL: URL?
+    @State private var error: String?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                Image(systemName: "wand.and.stars")
+                    .font(.title2)
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Gruppenfoto kombinieren").font(.title3.bold())
+                    Text("Auf dem besten Foto (\(candidate.base.baseName)) sehen \(personList) nicht optimal aus. "
+                         + "PhotoSorter kann ihre Gesichter aus anderen Aufnahmen der Serie übernehmen – on-device, "
+                         + "das Original bleibt unverändert.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                if result == nil {
+                    Button {
+                        Task { await runMerge() }
+                    } label: {
+                        if working {
+                            ProgressView().controlSize(.small)
+                        } else {
+                            Label("Kombinierte Version erstellen", systemImage: "wand.and.stars")
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(working)
+                }
+            }
+
+            if let result {
+                if result.faceCrops.isEmpty {
+                    Label("Die Gesichter ließen sich nicht sauber übertragen (Kopfhaltung zwischen den Aufnahmen zu unterschiedlich). "
+                          + "Wähle in diesem Fall lieber manuell eine andere Version.", systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                } else {
+                    HStack(alignment: .top, spacing: 16) {
+                        VStack(spacing: 6) {
+                            if let image = showOriginal ? result.originalPreview : result.preview {
+                                Image(decorative: image, scale: 1)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(maxHeight: 420)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            Picker("", selection: $showOriginal) {
+                                Text("Kombiniert").tag(false)
+                                Text("Original").tag(true)
+                            }
+                            .pickerStyle(.segmented)
+                            .frame(width: 220)
+                        }
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Vorher / Nachher").font(.headline)
+                            ForEach(Array(result.faceCrops.enumerated()), id: \.offset) { _, crop in
+                                HStack(spacing: 6) {
+                                    Text("Person \(crop.personID + 1)").font(.caption).frame(width: 64, alignment: .leading)
+                                    Image(decorative: crop.before, scale: 1).resizable().aspectRatio(contentMode: .fit)
+                                        .frame(width: 110, height: 110).clipShape(RoundedRectangle(cornerRadius: 6))
+                                    Image(systemName: "arrow.right").foregroundStyle(.secondary)
+                                    Image(decorative: crop.after, scale: 1).resizable().aspectRatio(contentMode: .fit)
+                                        .frame(width: 110, height: 110).clipShape(RoundedRectangle(cornerRadius: 6))
+                                }
+                            }
+                            if !result.failedPersons.isEmpty {
+                                Text("Nicht übertragen: " + result.failedPersons.map { "Person \($0 + 1)" }.joined(separator: ", ")
+                                     + " (Kopfhaltung zu unterschiedlich)")
+                                    .font(.caption)
+                                    .foregroundStyle(.orange)
+                            }
+                            Spacer(minLength: 8)
+                            if let savedURL {
+                                Label("Gespeichert als \(savedURL.lastPathComponent)", systemImage: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                Button("Im Finder zeigen") { model.revealInFinder(savedURL) }
+                            } else {
+                                HStack {
+                                    Button {
+                                        save(result)
+                                    } label: {
+                                        Label("Speichern", systemImage: "square.and.arrow.down")
+                                    }
+                                    .buttonStyle(.borderedProminent)
+                                    Button("Verwerfen") { self.result = nil }
+                                }
+                                Text(candidate.base.isRawPrimary ? "Wird als 16-Bit-TIFF neben dem Original gespeichert."
+                                                                  : "Wird als JPEG neben dem Original gespeichert.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+            }
+            if let error {
+                Text(error).foregroundStyle(.red).font(.caption)
+            }
+        }
+        .padding(14)
+        .background(.tint.opacity(0.07), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var personList: String {
+        let names = candidate.swaps.map { "Person \($0.personID + 1)" }
+        return names.count == 1 ? names[0] : names.dropLast().joined(separator: ", ") + " und " + names.last!
+    }
+
+    private func runMerge() async {
+        working = true
+        let candidate = candidate, tracks = tracks
+        let merged = await Task.detached(priority: .userInitiated) { FaceMerger.merge(candidate, tracks: tracks) }.value
+        working = false
+        if let merged {
+            result = merged
+        } else {
+            error = "Die Fotos konnten nicht geladen werden."
+        }
+    }
+
+    private func save(_ result: MergeResult) {
+        do {
+            savedURL = try model.saveMerge(result, scene: scene)
+        } catch {
+            self.error = "Speichern fehlgeschlagen: \(error.localizedDescription)"
+        }
     }
 }

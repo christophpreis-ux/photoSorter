@@ -72,6 +72,8 @@ struct PhotoAnalysis {
     var aesthetics: Float?
     var isUtility: Bool
     var hasAnimal: Bool
+    /// Vision-Bildklassifikation (Label → Konfidenz), z. B. "bride", "sparkling_wine", "stained_glass".
+    var labels: [String: Float]
     var category: PhotoCategory
     /// Kleines JPEG für die Übersicht.
     var thumbnailData: Data?
@@ -154,7 +156,7 @@ struct Decision {
 }
 
 enum SceneFilter: String, CaseIterable, Identifiable {
-    case all, withRejects, series, groups, portraits
+    case all, withRejects, series, groups, portraits, mergeable
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -163,6 +165,7 @@ enum SceneFilter: String, CaseIterable, Identifiable {
         case .series: "Nur Serien"
         case .groups: "Gruppenfotos"
         case .portraits: "Porträts"
+        case .mergeable: "Kombinierbar"
         }
     }
 }

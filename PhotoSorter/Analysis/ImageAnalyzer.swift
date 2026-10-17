@@ -44,6 +44,15 @@ enum ImageAnalyzer {
             isUtility = result.isUtility
         }
 
+        // Bildinhalt für die Erkennung von Abschnitten (Trauung, Sektempfang, Party …).
+        var labels: [String: Float] = [:]
+        let classifyRequest = VNClassifyImageRequest()
+        if (try? handler.perform([classifyRequest])) != nil, let results = classifyRequest.results {
+            for observation in results.prefix(60) where observation.confidence > 0.05 {
+                labels[observation.identifier] = observation.confidence
+            }
+        }
+
         let animalRequest = VNRecognizeAnimalsRequest()
         try? handler.perform([animalRequest])
         let hasAnimal = animalRequest.results?.contains { $0.confidence > 0.6 } ?? false
@@ -119,6 +128,7 @@ enum ImageAnalyzer {
             aesthetics: aesthetics,
             isUtility: isUtility,
             hasAnimal: hasAnimal,
+            labels: labels,
             category: category,
             thumbnailData: jpegThumbnail(from: image, maxPixel: thumbnailMaxPixel),
             pixelSize: originalSize

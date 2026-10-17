@@ -16,18 +16,15 @@ struct PhotoSorterApp: App {
                 Button("Ordner öffnen …") { model.chooseFolder() }
                     .keyboardShortcut("o")
             }
+            // Tasten K / X / A / V werden direkt in der Übersicht verarbeitet (damit Textfelder nicht blockiert werden).
             CommandMenu("Foto") {
-                Button("Behalten") { set(true) }
-                    .keyboardShortcut("k", modifiers: [])
-                Button("Aussortieren") { set(false) }
-                    .keyboardShortcut("x", modifiers: [])
-                Button("Automatisch entscheiden") { set(nil) }
-                    .keyboardShortcut("a", modifiers: [])
+                Button("Behalten (K)") { set(true) }
+                Button("Aussortieren (X)") { set(false) }
+                Button("Automatisch entscheiden (A)") { set(nil) }
                 Divider()
-                Button("Szene vergleichen") {
+                Button("Szene vergleichen (V)") {
                     if let photo = model.selectedPhoto { model.compareScene = model.scene(of: photo) }
                 }
-                .keyboardShortcut("v", modifiers: [])
             }
         }
     }

@@ -142,11 +142,14 @@ struct AppliedView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 60))
                 .foregroundStyle(.green)
-            Text("Fertig aussortiert")
+            Text("Fertig sortiert")
                 .font(.largeTitle.bold())
             if let result = model.lastResult {
                 VStack(spacing: 6) {
                     Text("\(result.rejectedPhotos) Fotos wurden in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
+                    if result.sortedPhotos > 0 {
+                        Text("\(result.sortedPhotos) behaltene Fotos wurden in \(model.chapters.count) Abschnitts-Ordner sortiert.")
+                    }
                     if result.renamedPhotos > 0 {
                         Text("\(result.renamedPhotos) behaltene Fotos wurden nach Kategorie umbenannt.")
                     }
@@ -155,7 +158,7 @@ struct AppliedView: View {
                 }
                 HStack {
                     Button {
-                        model.revealInFinder(result.rejectedPhotos > 0 ? result.rejectFolder : result.folder)
+                        model.revealInFinder(result.sortedPhotos > 0 || result.rejectedPhotos == 0 ? result.folder : result.rejectFolder)
                     } label: {
                         Label("Im Finder zeigen", systemImage: "folder")
                     }
