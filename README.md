@@ -11,14 +11,23 @@ macOS-App (SwiftUI) zum automatischen Aussortieren von Fotos – komplett on-dev
 - **Bewertung** je Foto: Schärfe des Motivs (Laplace-Varianz), Augen offen/zu (Gesichts-Landmarken, relativ zur selben Person in der Serie), Apple-Gesichtsqualität, Blickrichtung, Belichtung, Apple Aesthetics Score.
 - **Schieberegler** für die Aussortier-Stärke – Fotos fliegen animiert zwischen „Behalten“ (links) und „Aussortieren“ (rechts).
 - **Gruppenfotos**: Personen werden über die Serie hinweg verfolgt; für jede Person bleibt mindestens eine Version, auf der sie gut aussieht. Vergleichsansicht zeigt alle Gesichter pro Version.
-- **Abschnitte erkennen** (Getting Ready, Trauung Kirche/Standesamt/frei, Sektempfang, Gruppenfotos, Paarshooting, Essen, Party, Details …) über Vision-Bildklassifikation, Gesichter und Zeitpausen. Unbekannte Abschnitte benennt – falls verfügbar – Apples On-Device-Sprachmodell. Abschnitte lassen sich umbenennen, umtypisieren, teilen und zusammenführen.
+- **Abschnitte erkennen** – Alltag, Reisen und Feiern (Strand & Meer, Berge, Winter, Stadt, Natur, Tiere, Kinder & Spielplatz, Geburtstag, Weihnachten, Party, Konzert, Sport, Essen, Unterwegs, Zuhause, Nacht, Dokumente …) sowie Hochzeiten (Getting Ready, Trauung Kirche/Standesamt/frei, Sektempfang, Paarshooting) – über Vision-Bildklassifikation, Gesichter und Zeitpausen. Unbekannte Abschnitte benennt – falls verfügbar – Apples On-Device-Sprachmodell. Abschnitte lassen sich umbenennen, umtypisieren, teilen und zusammenführen.
 - **Sortieren in Ordner pro Abschnitt** (`01 Getting Ready`, `02 Trauung Kirche`, `03 Sektempfang` …) – damit in Lightroom pro Ordner ein Preset angewendet werden kann.
 - **Gruppenfotos kombinieren**: Hat jemand auf dem besten Foto die Augen zu, wird sein Gesicht aus einer anderen Aufnahme der Serie per Landmarken ausgerichtet, farblich angeglichen und weich eingeblendet. Vorher/Nachher-Vergleich, Speichern nur auf Wunsch (JPEG bzw. 16-Bit-TIFF bei RAW), Original bleibt unverändert. Ist die Kopfhaltung zu unterschiedlich, wird bewusst nicht getauscht.
 - **Abschnitt „Kombinieren“** in der Seitenleiste: alle Gruppenfotos, bei denen jemand die Augen zu hat, mit Vorher/Nachher – mit einem Klick übernehmen (oder „Alle übernehmen“).
 - **Apple Fotos**: Jahr oder Monat aus der Mediathek wählen, analysieren lassen und Aussortiertes nach „Zuletzt gelöscht“ verschieben (30 Tage wiederherstellbar). **Favoriten werden immer behalten.** Kombinierte Gruppenfotos werden als neues Foto in der Mediathek angelegt.
 - **Statistik** in einer lokalen Datenbank (SwiftData, `~/Library/Application Support/PhotoSorter`): aussortierte Fotos, Quote, Datenmenge, kombinierte Fotos, geschützte Favoriten, Verlauf pro Monat.
+- **Großansicht** mit der Leertaste: blättern mit ← →, entscheiden mit K / X, Gesichter einblenden mit F.
 - Manuelles Überstimmen (Doppelklick, Kontextmenü, Tasten K / X / A).
 - **Sortieren** verschiebt Aussortiertes in den Unterordner `Aussortiert` (nichts wird gelöscht, Rückgängig möglich). Behaltene Fotos kommen in die Abschnitts-Ordner und können optional ein Kategorie-Präfix bekommen (`Gruppenfoto_…`, `Portrait_…`, `Tier_…`, `Motiv_…`).
+
+## Tests
+
+```bash
+xcodebuild test -project PhotoSorter.xcodeproj -scheme PhotoSorter -destination 'platform=macOS'
+```
+
+Die Tests (Swift Testing) decken Auswahl-Logik, Gruppenfoto-Regel, Szenen- und Abschnitts-Erkennung, Einlesen, Sortieren/Rückgängig, Schärfemessung, Ausrichtung beim Kombinieren und den Favoritenschutz ab – mit generierten Testbildern, ohne private Fotos.
 
 ## Bauen
 

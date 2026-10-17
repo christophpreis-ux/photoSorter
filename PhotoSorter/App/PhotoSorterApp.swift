@@ -8,7 +8,7 @@ struct PhotoSorterApp: App {
         WindowGroup {
             ContentView()
                 .environment(model)
-                .frame(minWidth: 1050, minHeight: 680)
+                .frame(minWidth: 1140, minHeight: 680)
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
                 .containerBackground(Theme.background, for: .window)
@@ -23,6 +23,10 @@ struct PhotoSorterApp: App {
             }
             // Tasten K / X / A / V werden direkt in der Übersicht verarbeitet (damit Textfelder nicht blockiert werden).
             CommandMenu("Foto") {
+                Button("Großansicht (Leertaste)") {
+                    if model.phase == .review { model.previewPhotoID = model.selectedPhotoID }
+                }
+                Divider()
                 Button("Behalten (K)") { set(true) }
                 Button("Aussortieren (X)") { set(false) }
                 Button("Automatisch entscheiden (A)") { set(nil) }

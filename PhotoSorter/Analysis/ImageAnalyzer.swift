@@ -116,6 +116,11 @@ enum ImageAnalyzer {
                 sharpness: faceLaplacian.variance(normalizedVisionRect: eyeRegion)
             )
         }
+        // Fehlerkennungen (z. B. Muster) verwerfen: Gesichter zählen nur, wenn die Bildklassifikation auch Menschen sieht.
+        let peopleLabels: Set = ["people", "adult", "child", "teen", "baby", "bride", "groom", "crowd"]
+        if !labels.isEmpty, !labels.keys.contains(where: peopleLabels.contains) {
+            faces = []
+        }
         // Hintergrundgesichter ignorieren.
         let maxArea = faces.map(\.area).max() ?? 0
         faces = faces.filter { $0.area >= 0.0004 && $0.area >= maxArea * 0.12 }

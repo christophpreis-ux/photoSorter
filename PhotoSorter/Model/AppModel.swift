@@ -82,6 +82,8 @@ final class AppModel {
     }
 
     var selectedPhotoID: UUID?
+    /// Foto in der Großansicht (Leertaste).
+    var previewPhotoID: UUID?
     var showInspector = false
     var compareScene: PhotoScene?
     var renameKept = false
@@ -143,6 +145,7 @@ final class AppModel {
         approvedMerges = []
         dismissedMerges = []
         selectedPhotoID = nil
+        previewPhotoID = nil
         sidebarSelection = nil
         lastResult = nil
         lastPhotosDeleted = nil
@@ -213,8 +216,20 @@ final class AppModel {
         switch UserDefaults.standard.string(forKey: "openSidebar") {
         case "merge": sidebarSelection = .merge
         case "stats": sidebarSelection = .stats
+        case "preview":
+            selectedPhotoID = scenes.first(where: { $0.photos.count > 2 })?.photos.first?.id
+            previewPhotoID = selectedPhotoID
         default: break
         }
+    }
+
+    /// Übernimmt bereits analysierte Fotos (für Tests und Vorschauen).
+    func load(analyzedPhotos: [PhotoItem], source: PhotoSource) {
+        self.source = source
+        photos = analyzedPhotos
+        overrides = [:]
+        regroup()
+        phase = .review
     }
 
     // MARK: - Szenen & Entscheidungen
@@ -272,6 +287,19 @@ final class AppModel {
     func scene(of photo: PhotoItem) -> PhotoScene? {
         guard let id = sceneOfPhoto[photo.id] else { return nil }
         return scenes.first { $0.id == id }
+    }
+
+    var previewPhoto: PhotoItem? {
+        guard let id = previewPhotoID else { return nil }
+        return photos.first { $0.id == id }
+    }
+
+    /// Nächstes/vorheriges Foto in der Reihenfolge der Übersicht.
+    func neighbor(of photo: PhotoItem, offset: Int) -> PhotoItem? {
+        let ordered = chapters.flatMap { filteredScenes(in: $0) }.flatMap(\.photos)
+        guard let index = ordered.firstIndex(of: photo) else { return nil }
+        let target = index + offset
+        return ordered.indices.contains(target) ? ordered[target] : nil
     }
 
     var selectedPhoto: PhotoItem? {

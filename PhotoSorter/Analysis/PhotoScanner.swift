@@ -9,17 +9,29 @@ enum PhotoScanner {
     static let imageExtensions: Set<String> = ["jpg", "jpeg", "heic", "heif", "png", "tif", "tiff", "webp", "avif"]
     static let sidecarExtensions: Set<String> = ["xmp", "aae"]
 
+    /// Liest den Ordner inklusive Unterordnern (z. B. bereits sortierte Abschnitts-Ordner) – der Ordner „Aussortiert“ wird übersprungen.
     static func scan(folder: URL) throws -> [PhotoItem] {
-        let urls = try FileManager.default.contentsOfDirectory(
-            at: folder,
-            includingPropertiesForKeys: [.isRegularFileKey, .creationDateKey],
-            options: [.skipsHiddenFiles]
-        )
-        let files = urls.filter { (try? $0.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true }
-        let byBase = Dictionary(grouping: files) { $0.deletingPathExtension().lastPathComponent }
+        let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .creationDateKey]
+        _ = try FileManager.default.contentsOfDirectory(atPath: folder.path) // wirft, wenn der Ordner nicht lesbar ist
+        guard let enumerator = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: keys,
+                                                              options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { return [] }
+        var files: [URL] = []
+        for case let url as URL in enumerator {
+            let values = try? url.resourceValues(forKeys: Set(keys))
+            if values?.isDirectory == true {
+                if url.lastPathComponent == FileOrganizer.rejectFolderName { enumerator.skipDescendants() }
+                continue
+            }
+            if values?.isRegularFile == true { files.append(url) }
+        }
+        // RAW/JPEG/XMP gehören zusammen, wenn sie im selben Ordner denselben Namen haben.
+        let byBase = Dictionary(grouping: files) {
+            $0.deletingLastPathComponent().path + "/" + $0.deletingPathExtension().lastPathComponent
+        }
 
         var items: [PhotoItem] = []
-        for (base, group) in byBase {
+        for (_, group) in byBase {
+            guard let base = group.first?.deletingPathExtension().lastPathComponent else { continue }
             let ext = { (url: URL) in url.pathExtension.lowercased() }
             let images = group.filter { imageExtensions.contains(ext($0)) }
             let raws = group.filter { rawExtensions.contains(ext($0)) }

@@ -17,6 +17,12 @@ struct ContentView: View {
                 AppliedView()
             }
         }
+        .overlay {
+            if model.phase == .review, let photo = model.previewPhoto {
+                PhotoPreviewOverlay(photo: photo)
+                    .transition(.opacity)
+            }
+        }
         .navigationTitle(model.source?.title ?? "PhotoSorter")
         .navigationSubtitle(subtitle)
         .toolbar {

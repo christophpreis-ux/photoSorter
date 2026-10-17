@@ -180,6 +180,11 @@ struct PhotoThumbView: View {
             model.showInspector = true
         }
         .contextMenu {
+            Button("Großansicht (Leertaste)") {
+                model.selectedPhotoID = photo.id
+                model.previewPhotoID = photo.id
+            }
+            Divider()
             Button("Behalten") { withAnimation(decisionAnimation) { model.setOverride(true, for: photo) } }
             Button("Aussortieren") { withAnimation(decisionAnimation) { model.setOverride(false, for: photo) } }
             Button("Automatisch entscheiden") { withAnimation(decisionAnimation) { model.setOverride(nil, for: photo) } }

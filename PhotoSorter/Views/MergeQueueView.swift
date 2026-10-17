@@ -6,7 +6,9 @@ struct MergeQueueView: View {
 
     var body: some View {
         let queue = model.mergeQueue
-        ScrollView {
+        VStack(spacing: 0) {
+            header
+            ScrollView {
             LazyVStack(spacing: 14) {
                 if queue.isEmpty {
                     ContentUnavailableView("Nichts zu kombinieren", systemImage: "wand.and.stars",
@@ -19,9 +21,14 @@ struct MergeQueueView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
+            }
         }
         .background(Theme.background)
-        .safeAreaInset(edge: .top, spacing: 0) {
+        .onAppear { model.prepareMerges() }
+    }
+
+    /// Feste Höhe, damit die Mindestgröße der Spalte nicht von der Breite abhängt (sonst Layout-Schleife in der Split-View).
+    private var header: some View {
             HStack(spacing: 14) {
                 Image(systemName: "wand.and.stars")
                     .font(.title)
@@ -32,7 +39,7 @@ struct MergeQueueView: View {
                          + (model.isPhotosSource ? "Übernommene Fotos landen als neues Foto in Apple Fotos." : "Übernommene Fotos werden neben dem Original gespeichert."))
                         .font(.callout)
                         .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(2)
                 }
                 Spacer()
                 Button {
@@ -45,12 +52,11 @@ struct MergeQueueView: View {
                 .tint(Theme.keep)
                 .disabled(model.openMergeCount == 0)
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .frame(height: 84)
             .glassPanel(cornerRadius: 24)
             .padding(.horizontal, 12)
-            .padding(.top, 6)
-        }
-        .onAppear { model.prepareMerges() }
+            .padding(.vertical, 6)
     }
 }
 
@@ -97,6 +103,7 @@ private struct MergeQueueCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(14)
+        .frame(height: 248)
         .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(borderColor(state), lineWidth: 1.5))
     }
@@ -119,6 +126,7 @@ private struct MergeQueueCard: View {
     private func faces(_ state: MergeState?) -> some View {
         switch state {
         case .ready(let result):
+            ScrollView(.horizontal) {
             HStack(spacing: 14) {
                 ForEach(Array(result.faceCrops.enumerated()), id: \.offset) { _, crop in
                     VStack(spacing: 4) {
@@ -135,11 +143,15 @@ private struct MergeQueueCard: View {
                     }
                 }
             }
+            }
+            .scrollIndicators(.never)
+            .frame(height: 96)
         case .failed:
             Label("Nicht sauber kombinierbar – die Kopfhaltung ist zwischen den Aufnahmen zu unterschiedlich.",
                   systemImage: "exclamationmark.triangle.fill")
                 .font(.callout)
                 .foregroundStyle(.orange)
+                .lineLimit(2)
         case .saved:
             Label("Kombiniertes Foto gespeichert", systemImage: "checkmark.seal.fill")
                 .font(.callout)

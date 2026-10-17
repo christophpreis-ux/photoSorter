@@ -12,14 +12,17 @@ struct ReviewView: View {
             ChapterSidebar()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
         } detail: {
-            switch model.sidebarSelection {
-            case .merge:
-                MergeQueueView()
-            case .stats:
-                StatsView()
-            default:
-                reviewList
+            Group {
+                switch model.sidebarSelection {
+                case .merge:
+                    MergeQueueView()
+                case .stats:
+                    StatsView()
+                default:
+                    reviewList
+                }
             }
+            .navigationSplitViewColumnWidth(min: 560, ideal: 980)
         }
         .onChange(of: model.selectedPhotoID) { listFocused = true }
         .toolbar {
@@ -82,6 +85,7 @@ struct ReviewView: View {
                             }
                         }
                         .padding(14)
+                        .frame(height: 132)
                         .glassPanel(cornerRadius: 24)
                         .padding(.horizontal, 12)
                         .padding(.top, 6)
@@ -98,13 +102,23 @@ struct ReviewView: View {
             }
             .inspector(isPresented: $model.showInspector) {
                 PhotoInspector()
-                    .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
+                    .inspectorColumnWidth(min: 300, ideal: 340, max: 520)
             }
     }
 
-    /// K = behalten, X = aussortieren, A = automatisch, V = Szene vergleichen.
+    /// Leertaste = Großansicht, ← → = blättern, K = behalten, X = aussortieren, A = automatisch, V = Szene vergleichen.
     private func handleKey(_ press: KeyPress) -> KeyPress.Result {
         guard press.modifiers.isEmpty, let photo = model.selectedPhoto else { return .ignored }
+        switch press.key {
+        case .space:
+            withAnimation(.easeOut(duration: 0.15)) { model.previewPhotoID = photo.id }
+            return .handled
+        case .leftArrow, .rightArrow:
+            if let next = model.neighbor(of: photo, offset: press.key == .leftArrow ? -1 : 1) { model.selectedPhotoID = next.id }
+            return .handled
+        default:
+            break
+        }
         switch press.characters.lowercased() {
         case "k": withAnimation(decisionAnimation) { model.setOverride(true, for: photo) }
         case "x": withAnimation(decisionAnimation) { model.setOverride(false, for: photo) }
@@ -290,9 +304,11 @@ struct ControlBar: View {
                 } else {
                     Toggle("In Ordner pro Abschnitt sortieren", isOn: $model.sortIntoChapterFolders)
                         .toggleStyle(.checkbox)
+                        .lineLimit(1)
                         .help("z. B. „02 Trauung Kirche“, „03 Sektempfang“ – so kannst du in Lightroom pro Ordner ein Preset anwenden")
                     Toggle("Dateinamen mit Kategorie versehen", isOn: $model.renameKept)
                         .toggleStyle(.checkbox)
+                        .lineLimit(1)
                         .help("z. B. „Gruppenfoto_IMG_1234.jpg“ oder „Portrait_IMG_1234.jpg“")
                 }
                 if model.hasOverrides {

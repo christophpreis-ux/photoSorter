@@ -62,7 +62,7 @@ enum FileOrganizer {
                 let prefix = placement.category.filePrefix + "_"
                 let shouldRename = renameKept && !item.baseName.hasPrefix(prefix)
                 guard placement.folder != nil || shouldRename else { continue }
-                let directory = try placement.folder.map(folder) ?? root
+                let directory = try placement.folder.map(folder) ?? item.primaryURL.deletingLastPathComponent()
                 try move(item.files, baseName: shouldRename ? prefix + item.baseName : item.baseName, to: directory)
                 if shouldRename { renamed += 1 }
                 if placement.folder != nil { sorted += 1 }
