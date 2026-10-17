@@ -1,8 +1,10 @@
-<img src="icon.png" width="128" alt="PhotoSorter Icon">
+<img src="icon.png" width="128" alt="Photo Terminator Icon">
 
-# PhotoSorter
+# Photo Terminator
 
-macOS-App (SwiftUI) zum automatischen Aussortieren von Fotos – komplett on-device mit Apple-Frameworks (Vision, ImageIO, Accelerate).
+macOS-App (SwiftUI) zum automatischen Aussortieren von Fotos – komplett on-device mit Apple-Frameworks (Vision, ImageIO, Accelerate). Er fühlt kein Mitleid. Er findet jedes verwackelte Foto.
+
+**Terminator-Modus:** Zielerfassungs-HUD während der Analyse, brennender Fortschrittsbalken, Sprüche im Terminator-Stil, Schuss-Animation nach dem Terminieren und Ränge (Rekrut → T-800 → T-1000 → Skynet) in der Statistik. Aussortierte Fotos landen im Ordner `Terminiert` (nichts wird gelöscht).
 
 ## Funktionen
 
@@ -21,7 +23,7 @@ macOS-App (SwiftUI) zum automatischen Aussortieren von Fotos – komplett on-dev
 - **Drag & Drop**: Fotos einfach zwischen „Behalten“ und „Aussortieren“ hin- und herziehen.
 - **Lightroom** (Schritt 4): behaltene Fotos mit Presets übertragen – ein Standard-Preset für alle und ein eigenes pro Abschnitt. Passende Presets werden vorgeschlagen (eigene Lightroom-Presets mit passendem Namen haben Vorrang, sonst eingebaute PhotoSorter-Vorschläge wie „Hochzeit Hell & Weich“, „Landschaft Lebendig“, „Nacht & Party“). RAW bekommt eine XMP-Begleitdatei, JPEG/HEIC die Einstellungen verlustfrei in den Metadaten; Abschnitt und Kategorie werden als Stichwörter gesetzt. Danach öffnet sich Lightroom mit dem Import-Dialog.
 - Manuelles Überstimmen (Doppelklick, Kontextmenü, Tasten K / X / A).
-- **Sortieren** verschiebt Aussortiertes in den Unterordner `Aussortiert` (nichts wird gelöscht, Rückgängig möglich). Behaltene Fotos kommen in die Abschnitts-Ordner und können optional ein Kategorie-Präfix bekommen (`Gruppenfoto_…`, `Portrait_…`, `Tier_…`, `Motiv_…`).
+- **Sortieren** verschiebt Aussortiertes in den Unterordner `Terminiert` (nichts wird gelöscht, Rückgängig möglich). Behaltene Fotos kommen in die Abschnitts-Ordner und können optional ein Kategorie-Präfix bekommen (`Gruppenfoto_…`, `Portrait_…`, `Tier_…`, `Motiv_…`).
 
 ## Tests
 

@@ -17,18 +17,29 @@ struct StatsView: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack {
                     Image(systemName: "chart.bar.xaxis").font(.title).foregroundStyle(Theme.accent)
-                    Text("Statistik").font(.largeTitle.bold())
+                    Text("Einsatzbericht").font(.largeTitle.bold())
+                    Spacer()
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("Rang: \(TerminatorRank.title(for: rejected))")
+                            .font(.system(.title3, design: .monospaced).weight(.bold))
+                            .foregroundStyle(HUD.red)
+                        if let next = TerminatorRank.next(after: rejected) {
+                            Text("Noch \(next.remaining) Fotos bis \(next.title)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
 
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 12)], spacing: 12) {
-                    StatTile(title: "Aussortiert", value: rejected.formatted(), symbol: "xmark.bin.fill", color: Theme.reject)
-                    StatTile(title: "Analysiert", value: analyzed.formatted(), symbol: "sparkle.magnifyingglass", color: Theme.accent)
-                    StatTile(title: "Aussortier-Quote", value: analyzed > 0 ? (Double(rejected) / Double(analyzed)).formatted(.percent.precision(.fractionLength(0))) : "–",
+                    StatTile(title: "Terminiert", value: rejected.formatted(), symbol: "scope", color: Theme.reject)
+                    StatTile(title: "Ziele erfasst", value: analyzed.formatted(), symbol: "sparkle.magnifyingglass", color: Theme.accent)
+                    StatTile(title: "Abschussquote", value: analyzed > 0 ? (Double(rejected) / Double(analyzed)).formatted(.percent.precision(.fractionLength(0))) : "–",
                              symbol: "percent", color: .orange)
-                    StatTile(title: "Datenmenge aussortiert", value: bytes > 0 ? ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) : "–",
+                    StatTile(title: "Datenmenge terminiert", value: bytes > 0 ? ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) : "–",
                              symbol: "internaldrive.fill", color: .purple)
-                    StatTile(title: "Kombinierte Gruppenfotos", value: merges.count.formatted(), symbol: "wand.and.stars", color: Theme.keep)
-                    StatTile(title: "Geschützte Favoriten", value: favorites.formatted(), symbol: "heart.fill", color: .pink)
+                    StatTile(title: "Rekonstruierte Gruppenfotos", value: merges.count.formatted(), symbol: "wand.and.stars", color: Theme.keep)
+                    StatTile(title: "Verschonte Favoriten", value: favorites.formatted(), symbol: "heart.fill", color: .pink)
                 }
 
                 if !records.isEmpty {
@@ -37,12 +48,12 @@ struct StatsView: View {
                         Chart {
                             ForEach(records) { record in
                                 BarMark(x: .value("Monat", record.date, unit: .month), y: .value("Fotos", record.rejected))
-                                    .foregroundStyle(by: .value("Art", "Aussortiert"))
+                                    .foregroundStyle(by: .value("Art", "Terminiert"))
                                 BarMark(x: .value("Monat", record.date, unit: .month), y: .value("Fotos", record.kept))
                                     .foregroundStyle(by: .value("Art", "Behalten"))
                             }
                         }
-                        .chartForegroundStyleScale(["Aussortiert": Theme.reject, "Behalten": Theme.keep])
+                        .chartForegroundStyleScale(["Terminiert": Theme.reject, "Behalten": Theme.keep])
                         .frame(height: 220)
                     }
                     .padding(16)
@@ -61,7 +72,7 @@ struct StatsView: View {
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Text("\(record.rejected) von \(record.analyzed) aussortiert")
+                                Text("\(record.rejected) von \(record.analyzed) terminiert")
                                     .font(.callout.monospacedDigit())
                                     .foregroundStyle(.secondary)
                             }

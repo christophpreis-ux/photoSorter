@@ -51,6 +51,12 @@ final class AppModel {
     var progressDone = 0
     var progressTotal = 0
     var analysisStart = Date()
+    /// Live-Anzeige während der Analyse (HUD): zuletzt analysiertes Foto und Protokoll.
+    var hudImage: NSImage?
+    var hudLines: [String] = []
+    var hudLog: [String] = []
+    /// Schuss-Animation nach dem Terminieren.
+    var showTerminatedBurst = false
 
     private(set) var source: PhotoSource?
     var folderURL: URL? {
@@ -152,6 +158,9 @@ final class AppModel {
         lastPhotosDeleted = nil
         lastRecord = nil
         lightroomDone = false
+        hudImage = nil
+        hudLines = []
+        hudLog = []
         errorMessage = nil
         phase = .scanning
         analysisTask = Task { await analyze(makeItems: items) }
@@ -196,6 +205,7 @@ final class AppModel {
                 if let output {
                     items[index].analysis = output.analysis
                     items[index].captureDate = output.captureDate
+                    updateHUD(item: items[index], number: progressDone + 1)
                 }
                 progressDone += 1
                 if Task.isCancelled {
@@ -233,6 +243,25 @@ final class AppModel {
         overrides = [:]
         regroup()
         phase = .review
+    }
+
+    private func updateHUD(item: PhotoItem, number: Int) {
+        guard let analysis = item.analysis else { return }
+        if let data = analysis.thumbnailData { hudImage = NSImage(data: data) }
+        let sharp = Int(min(1, max(0, (log10(max(analysis.peakSharpness, 1)) - 1.3))) * 100)
+        let bars = String(repeating: "█", count: sharp / 10) + String(repeating: "░", count: 10 - sharp / 10)
+        let faces = analysis.faces.count
+        let threat = sharp < 25 ? "HOCH" : sharp < 55 ? "MITTEL" : "GERING"
+        hudLines = [
+            String(format: "ZIEL #%04d", number),
+            "ID: " + String(item.baseName.prefix(18)).uppercased(),
+            "SCHÄRFE  \(bars) \(sharp)",
+            "PERSONEN \(faces)",
+            "KATEGORIE \(analysis.category.title.uppercased())",
+            "BEDROHUNG: \(threat)",
+        ]
+        hudLog.append(String(format: "› %04d  ", number) + String(item.baseName.prefix(14)) + "  S\(sharp)  P\(faces)  " + (sharp < 25 ? "⚠︎ UNSCHARF" : "OK"))
+        if hudLog.count > 6 { hudLog.removeFirst(hudLog.count - 6) }
     }
 
     // MARK: - Szenen & Entscheidungen
@@ -527,6 +556,7 @@ final class AppModel {
                                                       analyzed: photos.count, kept: kept.count, rejected: rejected.count,
                                                       rejectedBytes: bytes, protectedFavorites: 0))
             phase = .applied
+            showTerminatedBurst = rejected.count > 0
         } catch {
             errorMessage = "Aussortieren fehlgeschlagen (alle Änderungen wurden zurückgenommen): \(error.localizedDescription)"
         }
@@ -548,6 +578,7 @@ final class AppModel {
                                                       rejected: assets.count, rejectedBytes: 0,
                                                       protectedFavorites: favoriteCount))
             phase = .applied
+            showTerminatedBurst = true
         } catch {
             errorMessage = "Löschen wurde abgebrochen oder ist fehlgeschlagen: \(error.localizedDescription)"
         }

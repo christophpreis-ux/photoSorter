@@ -271,8 +271,8 @@ struct StepIndicator: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        let steps = model.isPhotosSource ? ["Scannen", "Auswählen", "Aussortieren"]
-                                         : ["Scannen", "Auswählen", "Aussortieren", "Lightroom"]
+        let steps = model.isPhotosSource ? ["Zielerfassung", "Auswahl", "Terminieren"]
+                                         : ["Zielerfassung", "Auswahl", "Terminieren", "Lightroom"]
         HStack(spacing: 6) {
             ForEach(Array(steps.enumerated()), id: \.offset) { index, title in
                 let state = state(for: index)

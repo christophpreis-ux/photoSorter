@@ -18,12 +18,19 @@ struct ContentView: View {
             }
         }
         .overlay {
+            if model.showTerminatedBurst {
+                TerminatedBurst(count: model.lastResult?.rejectedPhotos ?? model.lastPhotosDeleted ?? 0,
+                                isPresented: $model.showTerminatedBurst)
+                    .transition(.opacity)
+            }
+        }
+        .overlay {
             if model.phase == .review, let photo = model.previewPhoto {
                 PhotoPreviewOverlay(photo: photo)
                     .transition(.opacity)
             }
         }
-        .navigationTitle(model.source?.title ?? "PhotoSorter")
+        .navigationTitle(model.source?.title ?? "Photo Terminator")
         .navigationSubtitle(subtitle)
         .toolbar {
             ToolbarItem(placement: .navigation) {
@@ -48,6 +55,7 @@ struct ContentView: View {
         }
         .task {
             // Zum Testen: `PhotoSorter -openFolder /pfad/zum/ordner`
+            if UserDefaults.standard.bool(forKey: "demoBurst") { model.showTerminatedBurst = true }
             if model.phase == .idle, let path = UserDefaults.standard.string(forKey: "openFolder") {
                 model.open(folder: URL(fileURLWithPath: path, isDirectory: true))
             }
@@ -93,7 +101,7 @@ struct ContentView: View {
     private var subtitle: String {
         switch model.phase {
         case .review: "\(model.photos.count) Fotos · \(model.scenes.count) Szenen"
-        case .analyzing: "Analysiere …"
+        case .analyzing: "Zielerfassung …"
         default: ""
         }
     }
@@ -102,17 +110,19 @@ struct ContentView: View {
 struct WelcomeView: View {
     @Environment(AppModel.self) private var model
     @State private var totalRejected = 0
+    @State private var welcomeQuote = TerminatorQuotes.random(TerminatorQuotes.welcome)
 
     var body: some View {
         VStack(spacing: 22) {
-            Image(nsImage: NSApplication.shared.applicationIconImage)
-                .resizable()
-                .frame(width: 128, height: 128)
-                .shadow(color: .black.opacity(0.4), radius: 12, y: 6)
-            VStack(spacing: 8) {
-                Text("PhotoSorter")
-                    .font(.largeTitle.bold())
-                Text("Findet ähnliche Fotos, erkennt geschlossene Augen und Unschärfe\nund schlägt vor, was du behalten solltest – komplett auf deinem Mac.")
+            RedEye(size: 90)
+                .padding(-30)
+            VStack(spacing: 10) {
+                GlitchText(text: "PHOTO TERMINATOR", font: .system(size: 44, weight: .black, design: .rounded))
+                Text(welcomeQuote)
+                    .font(.system(.body, design: .monospaced))
+                    .foregroundStyle(HUD.red)
+                    .multilineTextAlignment(.center)
+                Text("Findet ähnliche Fotos, erkennt geschlossene Augen und Unschärfe\nund terminiert den Rest – komplett auf deinem Mac.")
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
             }
@@ -120,7 +130,7 @@ struct WelcomeView: View {
                 Button {
                     model.chooseFolder()
                 } label: {
-                    Label("Ordner auswählen", systemImage: "folder")
+                    Label("Mission starten: Ordner", systemImage: "scope")
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                 }
@@ -128,7 +138,7 @@ struct WelcomeView: View {
                 Button {
                     model.showPhotosPicker = true
                 } label: {
-                    Label("Apple Fotos", systemImage: "photo.on.rectangle.angled")
+                    Label("Apple Fotos infiltrieren", systemImage: "photo.on.rectangle.angled")
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                 }
@@ -141,7 +151,7 @@ struct WelcomeView: View {
             Button {
                 model.showStats = true
             } label: {
-                Label(totalRejected > 0 ? "Bisher \(totalRejected.formatted()) Fotos aussortiert" : "Statistik",
+                Label(totalRejected > 0 ? "Rang \(TerminatorRank.title(for: totalRejected)) · \(totalRejected.formatted()) Fotos terminiert" : "Statistik",
                       systemImage: "chart.bar.xaxis")
             }
             .buttonStyle(.glass)
@@ -160,27 +170,43 @@ struct AnalysisProgressView: View {
     var body: some View {
         VStack(spacing: 18) {
             if model.phase == .scanning {
-                ProgressView("Suche Fotos …")
+                RedEye(size: 70)
+                Text("SUCHE ZIELE …").font(.system(.title3, design: .monospaced).weight(.bold)).foregroundStyle(HUD.red)
             } else {
-                Image(systemName: "sparkle.magnifyingglass")
-                    .font(.system(size: 44, weight: .light))
-                    .foregroundStyle(.tint)
-                    .symbolEffect(.pulse)
-                Text("Analysiere Fotos")
-                    .font(.title2.bold())
-                ProgressView(value: Double(model.progressDone), total: Double(max(model.progressTotal, 1)))
-                    .frame(width: 380)
-                Text("\(model.progressDone) von \(model.progressTotal)\(eta)")
+                HStack(alignment: .top, spacing: 20) {
+                    HUDScanner(image: model.hudImage, lines: model.hudLines)
+                        .frame(width: 420, height: 300)
+                    VStack(alignment: .leading, spacing: 10) {
+                        GlitchText(text: "ZIELERFASSUNG", font: .system(size: 26, weight: .black, design: .rounded))
+                        Text("Schärfe · Augen · Gesichter · Belichtung · Ähnlichkeit")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 3) {
+                            ForEach(Array(model.hudLog.enumerated()), id: \.offset) { index, line in
+                                Text(line)
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundStyle(line.contains("⚠︎") ? HUD.red : .secondary)
+                                    .opacity(0.4 + 0.6 * Double(index + 1) / Double(max(model.hudLog.count, 1)))
+                                    .lineLimit(1)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    }
+                    .frame(width: 300, height: 300)
+                }
+                FlameProgressBar(progress: Double(model.progressDone) / Double(max(model.progressTotal, 1)))
+                    .frame(width: 740)
+                Text("\(model.progressDone) von \(model.progressTotal) Zielen analysiert\(eta)")
+                    .font(.system(.body, design: .monospaced))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
-                Text("Schärfe · Augen · Gesichtsqualität · Belichtung · Ähnlichkeit")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                QuoteTicker(quotes: TerminatorQuotes.analysis)
+                    .frame(width: 640, height: 44)
             }
-            Button("Abbrechen", role: .cancel) { model.cancelAnalysis() }
+            Button("Mission abbrechen", role: .cancel) { model.cancelAnalysis() }
                 .buttonStyle(.glass)
         }
-        .padding(40)
+        .padding(36)
         .glassPanel(cornerRadius: 28)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
@@ -200,17 +226,21 @@ struct AnalysisProgressView: View {
 
 struct AppliedView: View {
     @Environment(AppModel.self) private var model
+    @State private var appliedQuote = TerminatorQuotes.random(TerminatorQuotes.applied)
 
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(Theme.keep)
-            Text("Fertig sortiert")
-                .font(.largeTitle.bold())
+            Image(systemName: "scope")
+                .font(.system(size: 60, weight: .light))
+                .foregroundStyle(HUD.red)
+                .shadow(color: HUD.red, radius: 12)
+            GlitchText(text: "MISSION ERFÜLLT", font: .system(size: 40, weight: .black, design: .rounded))
+            Text(appliedQuote)
+                .font(.system(.title3, design: .monospaced))
+                .foregroundStyle(HUD.red)
             if let deleted = model.lastPhotosDeleted {
                 VStack(spacing: 6) {
-                    Text("\(deleted) Fotos wurden in Apple Fotos nach „Zuletzt gelöscht“ verschoben.")
+                    Text("\(deleted) Fotos terminiert – sie liegen in Apple Fotos unter „Zuletzt gelöscht“.")
                     Text("\(model.favoriteCount) Favoriten wurden behalten. Gelöschte Fotos sind 30 Tage wiederherstellbar.")
                         .foregroundStyle(.secondary)
                 }
@@ -236,7 +266,7 @@ struct AppliedView: View {
             }
             if let result = model.lastResult {
                 VStack(spacing: 6) {
-                    Text("\(result.rejectedPhotos) Fotos wurden in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
+                    Text("\(result.rejectedPhotos) Fotos wurden terminiert – also in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
                     if result.sortedPhotos > 0 {
                         Text("\(result.sortedPhotos) behaltene Fotos wurden in \(model.chapters.count) Abschnitts-Ordner sortiert.")
                     }

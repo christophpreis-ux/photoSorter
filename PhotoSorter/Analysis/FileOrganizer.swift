@@ -25,7 +25,9 @@ struct KeptPlacement {
 /// Verschiebt aussortierte Fotos in einen Unterordner (nichts wird gelöscht),
 /// sortiert behaltene Fotos in Abschnitts-Ordner und benennt sie optional nach Kategorie um.
 enum FileOrganizer {
-    static let rejectFolderName = "Aussortiert"
+    static let rejectFolderName = "Terminiert"
+    /// Ordnernamen, die beim Einlesen übersprungen werden (inkl. älterer Versionen).
+    static let skippedFolderNames: Set<String> = [rejectFolderName, "Aussortiert"]
 
     static func apply(rejected: [PhotoItem], kept: [KeptPlacement], extraFiles: [(url: URL, folder: String?)],
                       in root: URL, renameKept: Bool) throws -> ApplyResult {

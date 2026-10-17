@@ -101,7 +101,7 @@ struct SceneCard: View {
         .frame(maxWidth: .infinity, minHeight: size * 0.75, alignment: .topLeading)
         .overlay {
             if photos.isEmpty {
-                Text(keep ? "Nichts behalten" : "Nichts aussortiert")
+                Text(keep ? "Keine Überlebenden" : "Keine Ziele")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }

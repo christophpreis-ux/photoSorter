@@ -22,6 +22,7 @@
 		48317889485D35E0C94FA1E8 /* SceneGrouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463642ADD8419350E014219C /* SceneGrouper.swift */; };
 		4D01CB8AD9DBF5B40944EB11 /* SelectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 910243B43FA6C8AD3D109496 /* SelectionEngine.swift */; };
 		67FC02CE93F2C7A88BC415EA /* PhotoScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D1EA66374C985B2524166 /* PhotoScanner.swift */; };
+		7656F109AFD2034F4B744B12 /* Terminator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEC5516289B5C508E531639 /* Terminator.swift */; };
 		85BFA583B85D832A748C33F2 /* SceneCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306A31B0EC7AEB0E861D0841 /* SceneCard.swift */; };
 		86638E4F99421254FA9BD195 /* PhotoSorterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8341521A254A32700C518C15 /* PhotoSorterApp.swift */; };
 		9694D191D05C5ECA439737C3 /* MergeQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C99C24F50B66A2093C62BFF /* MergeQueueView.swift */; };
@@ -65,6 +66,7 @@
 		5690A1B9091EA3DE3508BC53 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
 		5B26B95D229F4D728182247E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		5C99C24F50B66A2093C62BFF /* MergeQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeQueueView.swift; sourceTree = "<group>"; };
+		5FEC5516289B5C508E531639 /* Terminator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terminator.swift; sourceTree = "<group>"; };
 		61D5800575ABB558477C1F0E /* LightroomExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LightroomExportView.swift; sourceTree = "<group>"; };
 		66B269C748816D40F476B325 /* PhotosSourcePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosSourcePicker.swift; sourceTree = "<group>"; };
 		6C54FDD3811EB991EFF645AF /* PhotoSorter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PhotoSorter.entitlements; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				306A31B0EC7AEB0E861D0841 /* SceneCard.swift */,
 				B20D3944E08CDAF0D2B74A40 /* SceneCompareView.swift */,
 				C53A471506EE56EA91662645 /* StatsView.swift */,
+				5FEC5516289B5C508E531639 /* Terminator.swift */,
 				86D831CF82BD062C5FFF19CF /* Theme.swift */,
 			);
 			path = Views;
@@ -303,6 +306,7 @@
 				4D01CB8AD9DBF5B40944EB11 /* SelectionEngine.swift in Sources */,
 				30B69E96B59EBD8C1EA6926C /* StatsStore.swift in Sources */,
 				0E6B7D806A36DD1423A5C25B /* StatsView.swift in Sources */,
+				7656F109AFD2034F4B744B12 /* Terminator.swift in Sources */,
 				F3706F3855630039966450F8 /* Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -342,14 +346,16 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = PhotoSorter;
+				INFOPLIST_KEY_CFBundleDisplayName = "Photo Terminator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PhotoSorter analysiert deine Fotos auf dem Gerät und schlägt vor, welche du löschen kannst. Favoriten werden immer behalten.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo Terminator analysiert deine Fotos auf dem Gerät und schlägt vor, welche du löschen kannst. Favoriten werden immer behalten.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorter;
+				PRODUCT_MODULE_NAME = PhotoSorter;
+				PRODUCT_NAME = "Photo Terminator";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -369,7 +375,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorterTests;
 				SDKROOT = macosx;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhotoSorter.app/Contents/MacOS/PhotoSorter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Photo Terminator.app/Contents/MacOS/Photo Terminator";
 			};
 			name = Release;
 		};
@@ -511,7 +517,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorterTests;
 				SDKROOT = macosx;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PhotoSorter.app/Contents/MacOS/PhotoSorter";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Photo Terminator.app/Contents/MacOS/Photo Terminator";
 			};
 			name = Debug;
 		};
@@ -526,14 +532,16 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = PhotoSorter;
+				INFOPLIST_KEY_CFBundleDisplayName = "Photo Terminator";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PhotoSorter analysiert deine Fotos auf dem Gerät und schlägt vor, welche du löschen kannst. Favoriten werden immer behalten.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photo Terminator analysiert deine Fotos auf dem Gerät und schlägt vor, welche du löschen kannst. Favoriten werden immer behalten.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorter;
+				PRODUCT_MODULE_NAME = PhotoSorter;
+				PRODUCT_NAME = "Photo Terminator";
 				SDKROOT = macosx;
 			};
 			name = Release;

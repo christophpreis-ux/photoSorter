@@ -34,8 +34,8 @@ struct MergeQueueView: View {
                     .font(.title)
                     .foregroundStyle(Theme.accent)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Gruppenfotos kombinieren").font(.title3.bold())
-                    Text("Auf dem besten Foto hat jemand die Augen zu? Das Gesicht wird aus einer anderen Aufnahme der Serie übernommen. "
+                    Text("Gruppenfotos rekonstruieren").font(.title3.bold())
+                    Text("Ersatzteile aus anderen Aufnahmen – wie bei Cyborgs. Hat jemand auf dem besten Foto die Augen zu, kommt das Gesicht aus einer anderen Aufnahme der Serie. "
                          + (model.isPhotosSource ? "Übernommene Fotos landen als neues Foto in Apple Fotos." : "Übernommene Fotos werden neben dem Original gespeichert."))
                         .font(.callout)
                         .foregroundStyle(.secondary)

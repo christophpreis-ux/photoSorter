@@ -80,8 +80,8 @@ struct ReviewView: View {
                         VStack(spacing: 10) {
                             ControlBar()
                             HStack(spacing: 12) {
-                                ColumnHeader(title: "Behalten", count: model.keptCount, symbol: "checkmark.circle.fill", color: Theme.keep)
-                                ColumnHeader(title: "Aussortieren", count: model.rejectedCount, symbol: "xmark.bin.fill", color: Theme.reject)
+                                ColumnHeader(title: "Verschont", count: model.keptCount, symbol: "shield.lefthalf.filled", color: Theme.keep)
+                                ColumnHeader(title: "Terminieren", count: model.rejectedCount, symbol: "scope", color: Theme.reject)
                             }
                         }
                         .padding(14)
@@ -276,7 +276,7 @@ struct ControlBar: View {
         HStack(alignment: .center, spacing: 24) {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("Aussortier-Stärke")
+                    Text("Terminator-Modus")
                         .font(.headline)
                     Text(strictnessLabel)
                         .font(.subheadline)
@@ -284,13 +284,13 @@ struct ControlBar: View {
                         .contentTransition(.opacity)
                 }
                 HStack(spacing: 8) {
-                    Text("Mild").font(.caption).foregroundStyle(.secondary)
+                    Text("Gnädig").font(.caption).foregroundStyle(.secondary)
                     Slider(value: Binding(
                         get: { model.strictness },
                         set: { value in withAnimation(decisionAnimation) { model.strictness = value } }
                     ), in: 0...1)
                     .frame(minWidth: 220, maxWidth: 380)
-                    Text("Streng").font(.caption).foregroundStyle(.secondary)
+                    Text("Gnadenlos").font(.caption).foregroundStyle(.secondary)
                 }
             }
 
@@ -323,17 +323,17 @@ struct ControlBar: View {
             Button {
                 confirm = true
             } label: {
-                Label(model.isPhotosSource ? "In Papierkorb" : "Sortieren",
-                      systemImage: model.isPhotosSource ? "trash.fill" : "tray.and.arrow.down.fill")
+                Label(model.isPhotosSource ? "Terminieren (Papierkorb)" : "Terminieren",
+                      systemImage: "scope")
                     .padding(.horizontal, 6)
             }
             .controlSize(.large)
             .buttonStyle(.glassProminent)
-            .tint(model.isPhotosSource ? Theme.reject : Theme.accent)
+            .tint(Theme.reject)
             .disabled(model.isPhotosSource ? model.rejectedCount == 0
                       : model.rejectedCount == 0 && !model.renameKept && !model.sortIntoChapterFolders)
-            .confirmationDialog(model.isPhotosSource ? "Fotos löschen?" : "Fotos sortieren?", isPresented: $confirm) {
-                Button(model.isPhotosSource ? "\(model.rejectedCount) Fotos löschen" : "Jetzt sortieren",
+            .confirmationDialog("\(model.rejectedCount) Ziele terminieren?", isPresented: $confirm) {
+                Button(model.isPhotosSource ? "\(model.rejectedCount) Fotos löschen" : "Terminieren",
                        role: model.isPhotosSource ? .destructive : nil) { model.apply() }
                 Button("Abbrechen", role: .cancel) {}
             } message: {
@@ -351,11 +351,11 @@ struct ControlBar: View {
 
     private var strictnessLabel: String {
         switch model.strictness {
-        case ..<0.01: "nichts aussortieren"
-        case ..<0.3: "nur klare Ausreißer"
-        case ..<0.6: "ausgewogen"
-        case ..<0.9: "streng"
-        default: "nur das Beste je Szene"
+        case ..<0.01: "Pazifist – niemand wird terminiert"
+        case ..<0.3: "Beschützer – nur klare Ausreißer"
+        case ..<0.6: "Kampfmodus – ausgewogen"
+        case ..<0.9: "T-1000 – streng"
+        default: "Judgment Day – nur das Beste überlebt"
         }
     }
 }

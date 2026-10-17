@@ -10,7 +10,7 @@ struct FileTests {
         fm.fileExists(atPath: root.appendingPathComponent(path).path)
     }
 
-    @Test("Scanner: RAW+JPEG+XMP als ein Foto, Unterordner ja, „Aussortiert“ nein")
+    @Test("Scanner: RAW+JPEG+XMP als ein Foto, Unterordner ja, „Terminiert“/„Aussortiert“ nein")
     func scanner() throws {
         let root = TestSupport.makeTempDirectory()
         defer { try? fm.removeItem(at: root) }
@@ -20,6 +20,7 @@ struct FileTests {
         TestSupport.touch(root.appendingPathComponent("IMG_2.NEF"))
         TestSupport.writeJPEG(to: root.appendingPathComponent("01 Abschnitt/IMG_3.jpg"), width: 40, height: 30)
         TestSupport.writeJPEG(to: root.appendingPathComponent("Aussortiert/IMG_4.jpg"), width: 40, height: 30)
+        TestSupport.writeJPEG(to: root.appendingPathComponent("Terminiert/IMG_5.jpg"), width: 40, height: 30)
         TestSupport.touch(root.appendingPathComponent("notizen.txt"))
         TestSupport.touch(root.appendingPathComponent(".versteckt.jpg"))
 
@@ -40,7 +41,7 @@ struct FileTests {
         TestSupport.touch(root.appendingPathComponent("IMG_1.cr2"))
         TestSupport.touch(root.appendingPathComponent("IMG_2.jpg"))
         TestSupport.touch(root.appendingPathComponent("IMG_3.jpg"))
-        TestSupport.touch(root.appendingPathComponent("Aussortiert/IMG_2.jpg"))   // Namenskonflikt
+        TestSupport.touch(root.appendingPathComponent("Terminiert/IMG_2.jpg"))   // Namenskonflikt
 
         let items = try PhotoScanner.scan(folder: root)
         let item = { (name: String) in items.first { $0.baseName == name }! }
@@ -52,15 +53,15 @@ struct FileTests {
 
         #expect(exists(root, "01 Gruppenfotos/Gruppenfoto_IMG_1.jpg"))
         #expect(exists(root, "01 Gruppenfotos/Gruppenfoto_IMG_1.cr2"))   // RAW bleibt beim JPEG
-        #expect(exists(root, "Aussortiert/IMG_2_1.jpg"))                 // kein Überschreiben
-        #expect(exists(root, "Aussortiert/IMG_2.jpg"))
+        #expect(exists(root, "Terminiert/IMG_2_1.jpg"))                 // kein Überschreiben
+        #expect(exists(root, "Terminiert/IMG_2.jpg"))
         #expect(exists(root, "Motiv_IMG_3.jpg"))                         // ohne Ordner: bleibt liegen
         #expect(result.rejectedPhotos == 1)
         #expect(result.sortedPhotos == 1)
 
         let errors = FileOrganizer.undo(result.moves, createdFolders: result.createdFolders)
         #expect(errors.isEmpty)
-        for name in ["IMG_1.jpg", "IMG_1.cr2", "IMG_2.jpg", "IMG_3.jpg", "Aussortiert/IMG_2.jpg"] {
+        for name in ["IMG_1.jpg", "IMG_1.cr2", "IMG_2.jpg", "IMG_3.jpg", "Terminiert/IMG_2.jpg"] {
             #expect(exists(root, name), "\(name) fehlt nach Rückgängig")
         }
         #expect(!exists(root, "01 Gruppenfotos"))   // angelegter Ordner wieder entfernt

@@ -9,7 +9,7 @@ enum PhotoScanner {
     static let imageExtensions: Set<String> = ["jpg", "jpeg", "heic", "heif", "png", "tif", "tiff", "webp", "avif"]
     static let sidecarExtensions: Set<String> = ["xmp", "aae"]
 
-    /// Liest den Ordner inklusive Unterordnern (z. B. bereits sortierte Abschnitts-Ordner) – der Ordner „Aussortiert“ wird übersprungen.
+    /// Liest den Ordner inklusive Unterordnern (z. B. bereits sortierte Abschnitts-Ordner) – „Terminiert“/„Aussortiert“ werden übersprungen.
     static func scan(folder: URL) throws -> [PhotoItem] {
         let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .creationDateKey]
         _ = try FileManager.default.contentsOfDirectory(atPath: folder.path) // wirft, wenn der Ordner nicht lesbar ist
@@ -19,7 +19,7 @@ enum PhotoScanner {
         for case let url as URL in enumerator {
             let values = try? url.resourceValues(forKeys: Set(keys))
             if values?.isDirectory == true {
-                if url.lastPathComponent == FileOrganizer.rejectFolderName { enumerator.skipDescendants() }
+                if FileOrganizer.skippedFolderNames.contains(url.lastPathComponent) { enumerator.skipDescendants() }
                 continue
             }
             if values?.isRegularFile == true { files.append(url) }
