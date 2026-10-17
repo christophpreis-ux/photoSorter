@@ -17,12 +17,27 @@ enum ImageAnalyzer {
     static let thumbnailMaxPixel = 420
 
     static func analyze(url: URL, isRaw: Bool) -> AnalysisOutput? {
+        // Foto aus der Apple-Fotos-Mediathek
+        if let asset = PhotosLibrary.asset(for: url) {
+            guard let image = PhotosLibrary.image(for: asset, maxPixel: analysisMaxPixel) else { return nil }
+            return analyze(image: image, originalSize: CGSize(width: asset.pixelWidth, height: asset.pixelHeight),
+                           date: asset.creationDate ?? .distantPast) {
+                PhotosLibrary.image(for: asset, maxPixel: faceDetailMaxPixel)
+            }
+        }
         guard let source = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary) else { return nil }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] ?? [:]
         let date = captureDate(from: props, url: url)
-        guard let image = makeImage(source: source, maxPixel: analysisMaxPixel, isRaw: isRaw),
-              let gray = GrayImage(image) else { return nil }
+        guard let image = makeImage(source: source, maxPixel: analysisMaxPixel, isRaw: isRaw) else { return nil }
         let originalSize = pixelSize(from: props) ?? CGSize(width: image.width, height: image.height)
+        return analyze(image: image, originalSize: originalSize, date: date) {
+            makeImage(source: source, maxPixel: faceDetailMaxPixel, isRaw: isRaw)
+        }
+    }
+
+    private static func analyze(image: CGImage, originalSize: CGSize, date: Date,
+                                hiResProvider: () -> CGImage?) -> AnalysisOutput? {
+        guard let gray = GrayImage(image) else { return nil }
 
         // Schärfe & Belichtung
         let laplacian = gray.laplacian()
@@ -65,7 +80,7 @@ enum ImageAnalyzer {
         let hasSmallFaces = faceObservations.contains { $0.boundingBox.width * CGFloat(image.width) < 80 }
         if hasSmallFaces,
            max(originalSize.width, originalSize.height) > CGFloat(analysisMaxPixel) * 1.3,
-           let hiRes = makeImage(source: source, maxPixel: faceDetailMaxPixel, isRaw: isRaw),
+           let hiRes = hiResProvider(),
            let hiGray = GrayImage(hiRes) {
             let hiHandler = VNImageRequestHandler(cgImage: hiRes, options: [:])
             let hiFaces = VNDetectFaceLandmarksRequest()
@@ -158,6 +173,7 @@ enum ImageAnalyzer {
     }
 
     static func loadImage(url: URL, maxPixel: Int) -> CGImage? {
+        if PhotosLibrary.isPhotosURL(url) { return PhotosLibrary.image(for: url, maxPixel: maxPixel) }
         guard let source = CGImageSourceCreateWithURL(url as CFURL, [kCGImageSourceShouldCache: false] as CFDictionary) else { return nil }
         let isRaw = PhotoScanner.rawExtensions.contains(url.pathExtension.lowercased())
         return makeImage(source: source, maxPixel: maxPixel, isRaw: isRaw)

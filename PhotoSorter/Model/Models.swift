@@ -88,6 +88,8 @@ final class PhotoItem: Identifiable, Hashable, @unchecked Sendable {
     let primaryURL: URL
     var captureDate: Date
     var analysis: PhotoAnalysis?
+    /// Favorit in Apple Fotos – wird immer behalten.
+    var isFavorite = false
 
     init(baseName: String, files: [URL], primaryURL: URL, captureDate: Date) {
         self.baseName = baseName
@@ -148,6 +150,7 @@ enum PhotoIssue: String, Hashable, CaseIterable {
 
 struct Decision {
     var keep: Bool
+    var isFavorite = false
     var isBest: Bool
     var isManual: Bool
     var score: Double

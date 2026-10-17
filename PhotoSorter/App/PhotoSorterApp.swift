@@ -12,6 +12,7 @@ struct PhotoSorterApp: App {
                 .preferredColorScheme(.dark)
                 .tint(Theme.accent)
                 .containerBackground(Theme.background, for: .window)
+                .modelContainer(StatsStore.container)
                 .onAppear { NSApplication.shared.appearance = NSAppearance(named: .darkAqua) }
         }
         .windowToolbarStyle(.unified)

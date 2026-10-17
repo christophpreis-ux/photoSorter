@@ -131,12 +131,7 @@ enum FaceMerger {
                                faceCrops: [], failedPersons: failed)
         }
 
-        // Ergebnis materialisieren, damit Vorschau und Speichern nicht alles neu berechnen.
-        let space = CGColorSpace(name: CGColorSpace.displayP3)!
-        if let rendered = context.createCGImage(output, from: extent, format: .RGBAh, colorSpace: space) {
-            output = CIImage(cgImage: rendered)
-        }
-
+        // Das Ergebnis bleibt ein (speichersparender) Core-Image-Graph – gerendert wird erst für Vorschau und Speichern.
         let crops = swappedRects.compactMap { personID, rect -> (Int, CGImage, CGImage)? in
             guard let before = render(baseImage, rect: rect, maxPixel: 360),
                   let after = render(output, rect: rect, maxPixel: 360) else { return nil }
@@ -150,9 +145,9 @@ enum FaceMerger {
     }
 
     /// Speichert das kombinierte Foto neben dem Original (RAW → 16-Bit-TIFF, sonst JPEG) mit den Metadaten des Basisfotos.
-    static func save(_ result: MergeResult) throws -> URL {
+    static func save(_ result: MergeResult, to destination: URL? = nil) throws -> URL {
         let base = result.base
-        let folder = base.primaryURL.deletingLastPathComponent()
+        let folder = destination ?? base.primaryURL.deletingLastPathComponent()
         let isRaw = base.isRawPrimary
         let ext = isRaw ? "tif" : "jpg"
         var url = folder.appendingPathComponent("\(base.baseName)_Kombiniert.\(ext)")
@@ -194,7 +189,9 @@ enum FaceMerger {
 
     static func loadFullImage(_ url: URL) -> CIImage? {
         let image: CIImage?
-        if PhotoScanner.rawExtensions.contains(url.pathExtension.lowercased()) {
+        if PhotosLibrary.isPhotosURL(url) {
+            image = PhotosLibrary.fullImage(for: url)
+        } else if PhotoScanner.rawExtensions.contains(url.pathExtension.lowercased()) {
             image = CIRAWFilter(imageURL: url)?.outputImage
         } else {
             image = CIImage(contentsOf: url, options: [.applyOrientationProperty: true])

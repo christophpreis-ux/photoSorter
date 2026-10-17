@@ -113,7 +113,9 @@ private struct PhotoDetail: View {
                     if let scene = model.scene(of: photo), scene.photos.count > 1 {
                         Button("Szene vergleichen") { model.compareScene = scene }
                     }
-                    Button("Im Finder zeigen") { model.revealInFinder(photo.primaryURL) }
+                    if !model.isPhotosSource {
+                        Button("Im Finder zeigen") { model.revealInFinder(photo.primaryURL) }
+                    }
                 }
             }
             .padding()

@@ -290,7 +290,9 @@ private struct MergePanel: View {
                             if let savedURL {
                                 Label("Gespeichert als \(savedURL.lastPathComponent)", systemImage: "checkmark.circle.fill")
                                     .foregroundStyle(.green)
-                                Button("Im Finder zeigen") { model.revealInFinder(savedURL) }
+                                if !model.isPhotosSource {
+                                    Button("Im Finder zeigen") { model.revealInFinder(savedURL) }
+                                }
                             } else {
                                 HStack {
                                     Button {
@@ -337,10 +339,12 @@ private struct MergePanel: View {
     }
 
     private func save(_ result: MergeResult) {
-        do {
-            savedURL = try model.saveMerge(result, scene: scene)
-        } catch {
-            self.error = "Speichern fehlgeschlagen: \(error.localizedDescription)"
+        Task {
+            do {
+                savedURL = try await model.saveMerge(result, scene: scene)
+            } catch {
+                self.error = "Speichern fehlgeschlagen: \(error.localizedDescription)"
+            }
         }
     }
 }

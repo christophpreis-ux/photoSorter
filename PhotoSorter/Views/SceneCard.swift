@@ -48,7 +48,7 @@ struct SceneCard: View {
             Spacer()
             if model.mergeCandidate(for: scene) != nil {
                 Button {
-                    model.compareScene = scene
+                    model.sidebarSelection = .merge
                 } label: {
                     Label("Augen-zu kombinieren", systemImage: "wand.and.stars")
                 }
@@ -135,7 +135,9 @@ struct PhotoThumbView: View {
             }
         }
         .overlay(alignment: .topTrailing) {
-            if decision?.isManual == true {
+            if decision?.isFavorite == true {
+                badge(Image(systemName: "heart.fill"), color: .pink)
+            } else if decision?.isManual == true {
                 badge(Image(systemName: "hand.raised.fill"), color: .white)
             }
         }
@@ -183,7 +185,9 @@ struct PhotoThumbView: View {
             Button("Automatisch entscheiden") { withAnimation(decisionAnimation) { model.setOverride(nil, for: photo) } }
             Divider()
             Button("Szene vergleichen") { model.compareScene = model.scene(of: photo) }
-            Button("Im Finder zeigen") { model.revealInFinder(photo.primaryURL) }
+            if !model.isPhotosSource {
+                Button("Im Finder zeigen") { model.revealInFinder(photo.primaryURL) }
+            }
         }
         .help(decision.map { "\($0.reason)\nDoppelklick zum Umschalten" } ?? photo.baseName)
     }

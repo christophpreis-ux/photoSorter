@@ -17,7 +17,7 @@ struct ContentView: View {
                 AppliedView()
             }
         }
-        .navigationTitle(model.folderURL?.lastPathComponent ?? "PhotoSorter")
+        .navigationTitle(model.source?.title ?? "PhotoSorter")
         .navigationSubtitle(subtitle)
         .toolbar {
             ToolbarItem(placement: .navigation) {
@@ -27,6 +27,14 @@ struct ContentView: View {
                     Label("Ordner wählen", systemImage: "folder.badge.plus")
                 }
                 .help("Ordner mit Fotos auswählen (⌘O)")
+            }
+            ToolbarItem(placement: .navigation) {
+                Button {
+                    model.showPhotosPicker = true
+                } label: {
+                    Label("Apple Fotos", systemImage: "photo.on.rectangle.angled")
+                }
+                .help("Jahr oder Monat aus Apple Fotos analysieren")
             }
         }
         .task {
@@ -49,6 +57,24 @@ struct ContentView: View {
             SceneCompareView(scene: scene)
                 .environment(model)
         }
+        .sheet(isPresented: $model.showPhotosPicker) {
+            PhotosSourcePicker()
+                .environment(model)
+        }
+        .sheet(isPresented: $model.showStats) {
+            VStack(spacing: 0) {
+                StatsView()
+                HStack {
+                    Spacer()
+                    Button("Fertig") { model.showStats = false }
+                        .buttonStyle(.glassProminent)
+                        .keyboardShortcut(.defaultAction)
+                }
+                .padding()
+            }
+            .frame(minWidth: 760, minHeight: 640)
+            .background(Theme.background)
+        }
     }
 
     private var subtitle: String {
@@ -62,7 +88,7 @@ struct ContentView: View {
 
 struct WelcomeView: View {
     @Environment(AppModel.self) private var model
-    @State private var isTargeted = false
+    @State private var totalRejected = 0
 
     var body: some View {
         VStack(spacing: 22) {
@@ -77,23 +103,41 @@ struct WelcomeView: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
             }
-            Button {
-                model.chooseFolder()
-            } label: {
-                Label("Ordner auswählen", systemImage: "folder")
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
+            HStack(spacing: 12) {
+                Button {
+                    model.chooseFolder()
+                } label: {
+                    Label("Ordner auswählen", systemImage: "folder")
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.glassProminent)
+                Button {
+                    model.showPhotosPicker = true
+                } label: {
+                    Label("Apple Fotos", systemImage: "photo.on.rectangle.angled")
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.glass)
             }
             .controlSize(.extraLarge)
-            .buttonStyle(.glassProminent)
             Text("oder Ordner hierher ziehen · JPEG, HEIC, PNG, TIFF und RAW (CR3, NEF, ARW, DNG, RAF …)")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+            Button {
+                model.showStats = true
+            } label: {
+                Label(totalRejected > 0 ? "Bisher \(totalRejected.formatted()) Fotos aussortiert" : "Statistik",
+                      systemImage: "chart.bar.xaxis")
+            }
+            .buttonStyle(.glass)
         }
         .padding(48)
         .glassPanel(cornerRadius: 32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.background)
+        .onAppear { totalRejected = StatsStore.totalRejected() }
     }
 }
 
@@ -151,6 +195,32 @@ struct AppliedView: View {
                 .foregroundStyle(Theme.keep)
             Text("Fertig sortiert")
                 .font(.largeTitle.bold())
+            if let deleted = model.lastPhotosDeleted {
+                VStack(spacing: 6) {
+                    Text("\(deleted) Fotos wurden in Apple Fotos nach „Zuletzt gelöscht“ verschoben.")
+                    Text("\(model.favoriteCount) Favoriten wurden behalten. Gelöschte Fotos sind 30 Tage wiederherstellbar.")
+                        .foregroundStyle(.secondary)
+                }
+                HStack {
+                    Button {
+                        if let url = URL(string: "photos://") { NSWorkspace.shared.open(url) }
+                    } label: {
+                        Label("Fotos öffnen", systemImage: "photo.on.rectangle.angled")
+                    }
+                    Button {
+                        model.reopenSource()
+                    } label: {
+                        Label("Zeitraum neu analysieren", systemImage: "arrow.clockwise")
+                    }
+                    Button {
+                        model.showStats = true
+                    } label: {
+                        Label("Statistik", systemImage: "chart.bar.xaxis")
+                    }
+                }
+                .controlSize(.large)
+                .buttonStyle(.glass)
+            }
             if let result = model.lastResult {
                 VStack(spacing: 6) {
                     Text("\(result.rejectedPhotos) Fotos wurden in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
@@ -175,7 +245,7 @@ struct AppliedView: View {
                         Label("Rückgängig", systemImage: "arrow.uturn.backward")
                     }
                     Button {
-                        if let folder = model.folderURL { model.open(folder: folder) }
+                        model.reopenSource()
                     } label: {
                         Label("Ordner neu analysieren", systemImage: "arrow.clockwise")
                     }

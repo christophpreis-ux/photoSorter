@@ -12,7 +12,45 @@ struct ReviewView: View {
             ChapterSidebar()
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240, max: 320)
         } detail: {
-            Group {
+            switch model.sidebarSelection {
+            case .merge:
+                MergeQueueView()
+            case .stats:
+                StatsView()
+            default:
+                reviewList
+            }
+        }
+        .onChange(of: model.selectedPhotoID) { listFocused = true }
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Picker("Filter", selection: $model.filter) {
+                    ForEach(SceneFilter.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .frame(width: 160)
+                Slider(value: $model.thumbnailSize, in: 80...240) {
+                    Text("Größe")
+                } minimumValueLabel: {
+                    Image(systemName: "photo").imageScale(.small)
+                } maximumValueLabel: {
+                    Image(systemName: "photo").imageScale(.large)
+                }
+                .frame(width: 140)
+                .help("Vorschaugröße")
+                GroupingSettingsButton()
+                Button {
+                    model.showInspector.toggle()
+                } label: {
+                    Label("Details", systemImage: "sidebar.trailing")
+                }
+            }
+        }
+    }
+
+    private var reviewList: some View {
+        @Bindable var model = model
+        return Group {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 14, pinnedViews: [.sectionHeaders]) {
@@ -48,8 +86,8 @@ struct ReviewView: View {
                         .padding(.horizontal, 12)
                         .padding(.top, 6)
                     }
-                    .onChange(of: model.selectedChapterID) { _, id in
-                        guard let id else { return }
+                    .onChange(of: model.sidebarSelection, initial: true) { _, selection in
+                        guard case .chapter(let id) = selection else { return }
                         withAnimation { proxy.scrollTo(id, anchor: .top) }
                     }
                 }
@@ -62,32 +100,6 @@ struct ReviewView: View {
                 PhotoInspector()
                     .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
             }
-        }
-        .onChange(of: model.selectedPhotoID) { listFocused = true }
-        .toolbar {
-            ToolbarItemGroup(placement: .primaryAction) {
-                Picker("Filter", selection: $model.filter) {
-                    ForEach(SceneFilter.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.menu)
-                .frame(width: 160)
-                Slider(value: $model.thumbnailSize, in: 80...240) {
-                    Text("Größe")
-                } minimumValueLabel: {
-                    Image(systemName: "photo").imageScale(.small)
-                } maximumValueLabel: {
-                    Image(systemName: "photo").imageScale(.large)
-                }
-                .frame(width: 140)
-                .help("Vorschaugröße")
-                GroupingSettingsButton()
-                Button {
-                    model.showInspector.toggle()
-                } label: {
-                    Label("Details", systemImage: "sidebar.trailing")
-                }
-            }
-        }
     }
 
     /// K = behalten, X = aussortieren, A = automatisch, V = Szene vergleichen.
@@ -110,7 +122,23 @@ struct ChapterSidebar: View {
 
     var body: some View {
         @Bindable var model = model
-        List(selection: $model.selectedChapterID) {
+        List(selection: $model.sidebarSelection) {
+            Section("Werkzeuge") {
+                HStack {
+                    Label("Kombinieren", systemImage: "wand.and.stars")
+                    Spacer()
+                    if model.openMergeCount > 0 {
+                        Text("\(model.openMergeCount)")
+                            .font(.caption.bold().monospacedDigit())
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(Theme.accent.opacity(0.85), in: Capsule())
+                    }
+                }
+                .tag(SidebarItem.merge)
+                Label("Statistik", systemImage: "chart.bar.xaxis")
+                    .tag(SidebarItem.stats)
+            }
             Section("Abschnitte") {
                 ForEach(model.chapters) { chapter in
                     let counts = model.photoCount(of: chapter)
@@ -122,12 +150,14 @@ struct ChapterSidebar: View {
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
-                    .tag(chapter.id)
+                    .tag(SidebarItem.chapter(chapter.id))
                 }
             }
         }
         .safeAreaInset(edge: .bottom) {
-            Text(model.sortIntoChapterFolders
+            Text(model.isPhotosSource
+                 ? "Aussortierte Fotos werden in „Zuletzt gelöscht“ verschoben. Favoriten bleiben immer erhalten."
+                 : model.sortIntoChapterFolders
                  ? "Behaltene Fotos werden in Ordner pro Abschnitt sortiert – ideal für Lightroom-Presets."
                  : "Behaltene Fotos bleiben im Hauptordner.")
                 .font(.caption)
@@ -162,7 +192,7 @@ struct ChapterHeader: View {
                         Text("\(first.formatted(date: .abbreviated, time: .shortened)) – \(last.formatted(date: .omitted, time: .shortened))")
                     }
                     Text("· \(counts.total) Fotos · \(counts.kept) behalten")
-                    if model.sortIntoChapterFolders {
+                    if model.sortIntoChapterFolders && !model.isPhotosSource {
                         Label(model.folderName(for: chapter), systemImage: "folder")
                             .labelStyle(.titleAndIcon)
                     }
@@ -253,12 +283,18 @@ struct ControlBar: View {
             Spacer()
 
             VStack(alignment: .leading, spacing: 4) {
-                Toggle("In Ordner pro Abschnitt sortieren", isOn: $model.sortIntoChapterFolders)
-                    .toggleStyle(.checkbox)
-                    .help("z. B. „02 Trauung Kirche“, „03 Sektempfang“ – so kannst du in Lightroom pro Ordner ein Preset anwenden")
-                Toggle("Dateinamen mit Kategorie versehen", isOn: $model.renameKept)
-                    .toggleStyle(.checkbox)
-                    .help("z. B. „Gruppenfoto_IMG_1234.jpg“ oder „Portrait_IMG_1234.jpg“")
+                if model.isPhotosSource {
+                    Label("\(model.favoriteCount) Favoriten geschützt", systemImage: "heart.fill")
+                        .foregroundStyle(.pink)
+                        .font(.callout)
+                } else {
+                    Toggle("In Ordner pro Abschnitt sortieren", isOn: $model.sortIntoChapterFolders)
+                        .toggleStyle(.checkbox)
+                        .help("z. B. „02 Trauung Kirche“, „03 Sektempfang“ – so kannst du in Lightroom pro Ordner ein Preset anwenden")
+                    Toggle("Dateinamen mit Kategorie versehen", isOn: $model.renameKept)
+                        .toggleStyle(.checkbox)
+                        .help("z. B. „Gruppenfoto_IMG_1234.jpg“ oder „Portrait_IMG_1234.jpg“")
+                }
                 if model.hasOverrides {
                     Button("Manuelle Änderungen zurücksetzen") {
                         withAnimation(decisionAnimation) { model.resetOverrides() }
@@ -271,20 +307,27 @@ struct ControlBar: View {
             Button {
                 confirm = true
             } label: {
-                Label("Sortieren", systemImage: "tray.and.arrow.down.fill")
+                Label(model.isPhotosSource ? "In Papierkorb" : "Sortieren",
+                      systemImage: model.isPhotosSource ? "trash.fill" : "tray.and.arrow.down.fill")
                     .padding(.horizontal, 6)
             }
             .controlSize(.large)
             .buttonStyle(.glassProminent)
-            .tint(Theme.accent)
-            .disabled(model.rejectedCount == 0 && !model.renameKept && !model.sortIntoChapterFolders)
-            .confirmationDialog("Fotos sortieren?", isPresented: $confirm) {
-                Button("Jetzt sortieren") { model.apply() }
+            .tint(model.isPhotosSource ? Theme.reject : Theme.accent)
+            .disabled(model.isPhotosSource ? model.rejectedCount == 0
+                      : model.rejectedCount == 0 && !model.renameKept && !model.sortIntoChapterFolders)
+            .confirmationDialog(model.isPhotosSource ? "Fotos löschen?" : "Fotos sortieren?", isPresented: $confirm) {
+                Button(model.isPhotosSource ? "\(model.rejectedCount) Fotos löschen" : "Jetzt sortieren",
+                       role: model.isPhotosSource ? .destructive : nil) { model.apply() }
                 Button("Abbrechen", role: .cancel) {}
             } message: {
+                if model.isPhotosSource {
+                    Text("\(model.rejectedCount) Fotos werden in Apple Fotos nach „Zuletzt gelöscht“ verschoben und sind dort 30 Tage wiederherstellbar. \(model.favoriteCount) Favoriten werden nicht angetastet.")
+                } else {
                 Text("\(model.rejectedCount) Fotos (\(model.rejectedFileCount) Dateien) werden in den Unterordner „\(FileOrganizer.rejectFolderName)“ verschoben – es wird nichts gelöscht."
                      + (model.sortIntoChapterFolders ? " Die \(model.keptCount) behaltenen Fotos werden in \(model.chapters.count) Abschnitts-Ordner sortiert." : "")
                      + (model.renameKept ? " Dateinamen bekommen die Kategorie als Präfix." : ""))
+                }
             }
         }
         .padding(.horizontal, 6)
