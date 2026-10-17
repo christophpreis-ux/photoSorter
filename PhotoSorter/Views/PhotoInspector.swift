@@ -35,7 +35,7 @@ private struct PhotoDetail: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if let size = photo.analysis?.pixelSize {
-                        Text("\(Int(size.width)) × \(Int(size.height)) px · \(photo.category.title)")
+                        Text("\(Int(size.width)) × \(Int(size.height)) px · \(ByteFormat.string(photo.byteSize)) · \(photo.category.title)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

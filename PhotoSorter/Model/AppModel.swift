@@ -81,6 +81,9 @@ final class AppModel {
     private var keptByScene: [UUID: Int] = [:]
     private(set) var keptCount = 0
     private(set) var rejectedCount = 0
+    private(set) var keptBytes: Int64 = 0
+    private(set) var rejectedBytes: Int64 = 0
+    private var keptBytesByScene: [UUID: Int64] = [:]
     private(set) var favoriteCount = 0
     /// Abschnitte des Shootings (Trauung, Sektempfang, Gruppenfotos …).
     var chapters: [EventChapter] = []
@@ -162,6 +165,9 @@ final class AppModel {
         keptByScene = [:]
         keptCount = 0
         rejectedCount = 0
+        keptBytes = 0
+        rejectedBytes = 0
+        keptBytesByScene = [:]
         favoriteCount = 0
         mergeStates = [:]
         approvedMerges = []
@@ -315,6 +321,14 @@ final class AppModel {
 
         keptCount = all.values.filter(\.keep).count
         rejectedCount = all.count - keptCount
+        keptBytes = 0
+        rejectedBytes = 0
+        for photo in photos {
+            if all[photo.id]?.keep == false { rejectedBytes += photo.byteSize } else { keptBytes += photo.byteSize }
+        }
+        keptBytesByScene = Dictionary(uniqueKeysWithValues: scenes.map { scene in
+            (scene.id, scene.photos.filter { all[$0.id]?.keep != false }.reduce(Int64(0)) { $0 + $1.byteSize })
+        })
         keptByScene = Dictionary(uniqueKeysWithValues: scenes.map { scene in
             (scene.id, scene.photos.filter { all[$0.id]?.keep != false }.count)
         })
@@ -444,6 +458,13 @@ final class AppModel {
         let chapter = EventChapter(sceneIDs: tail, kind: kind, name: EventDetector.defaultName(kind: kind, start: scene.startDate),
                                    topLabels: EventDetector.topLabels(photos))
         chapters.insert(chapter, at: index + 1)
+    }
+
+    var totalBytes: Int64 { keptBytes + rejectedBytes }
+
+    /// Speicherplatz der behaltenen Fotos eines Abschnitts.
+    func keptBytes(of chapter: EventChapter) -> Int64 {
+        chapter.sceneIDs.reduce(Int64(0)) { $0 + (keptBytesByScene[$1] ?? 0) }
     }
 
     func photoCount(of chapter: EventChapter) -> (total: Int, kept: Int) {
@@ -600,7 +621,7 @@ final class AppModel {
             lastPhotosDeleted = assets.count
             lastRecord = StatsStore.record(SortRecord(sourceName: source?.title ?? "", sourceKind: "Apple Fotos",
                                                       analyzed: photos.count, kept: photos.count - assets.count,
-                                                      rejected: assets.count, rejectedBytes: 0,
+                                                      rejected: assets.count, rejectedBytes: rejected.reduce(Int64(0)) { $0 + $1.byteSize },
                                                       protectedFavorites: favoriteCount))
             phase = .applied
             showTerminatedBurst = true

@@ -116,7 +116,6 @@ private struct CompareCard: View {
         VStack(alignment: .leading, spacing: 8) {
             FaceOverlayImage(photo: photo, image: image, faces: evaluation?.evaluations[photo.id]?.faces ?? [])
                 .frame(height: 380)
-                .opacity(decision?.keep == false ? 0.6 : 1)
             HStack {
                 if decision?.isBest == true { Image(systemName: "star.fill").foregroundStyle(.yellow) }
                 Text(photo.baseName).font(.caption.bold()).lineLimit(1)
@@ -173,7 +172,6 @@ private struct FaceCell: View {
                 }
                 .frame(width: 84, height: 84)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                .opacity(kept ? 1 : 0.55)
                 HStack(spacing: 2) {
                     if person.bestPhoto == photo.id { Image(systemName: "star.fill").foregroundStyle(.yellow) }
                     if faceEval?.eyesClosed == true { Image(systemName: "eye.slash.fill").foregroundStyle(.red) }

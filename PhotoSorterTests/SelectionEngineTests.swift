@@ -99,3 +99,41 @@ struct SelectionEngineTests {
         #expect(decisions[photos[0].id]?.keep == false)
     }
 }
+
+@Suite("Einzigartige Motive bleiben erhalten")
+struct UniqueMotifTests {
+    @Test("Unterschiedliche Motive in einer Szene: von jedem bleibt die beste Version – auch wenn sie unscharf ist")
+    func uniqueMotifsAreKept() {
+        // Motiv A: zwei scharfe, sehr ähnliche Fotos. Motiv B: zwei unscharfe, untereinander ähnlich, aber ganz anders als A.
+        let a1 = TestSupport.photo("A1", at: 0, analysis: TestSupport.analysis(sharpness: 900))
+        let a2 = TestSupport.photo("A2", at: 1, analysis: TestSupport.analysis(sharpness: 700))
+        let b1 = TestSupport.photo("B1", at: 2, analysis: TestSupport.analysis(sharpness: 60))
+        let b2 = TestSupport.photo("B2", at: 3, analysis: TestSupport.analysis(sharpness: 40))
+        let motif = ["A1": "A", "A2": "A", "B1": "B", "B2": "B"]
+        let evaluation = SelectionEngine.evaluate(scene: TestSupport.scene([a1, a2, b1, b2])) { p, q in
+            motif[p.baseName] == motif[q.baseName] ? 0.1 : 0.8
+        }
+        let decisions = SelectionEngine.decide(evaluation, strictness: 1, overrides: [:])
+        #expect(decisions[a1.id]?.keep == true)
+        #expect(decisions[b1.id]?.keep == true)            // unscharf, aber einzigartig
+        #expect(decisions[b1.id]?.reason.contains("Einzigartig") == true)
+        #expect(decisions[a2.id]?.keep == false)           // ähnlich zu A1 → darf weg
+        #expect(decisions[b2.id]?.keep == false)           // ähnlich zu B1 → darf weg
+    }
+
+    @Test("Ein unscharfes Einzelfoto bleibt auch bei maximaler Strenge")
+    func blurrySingleIsKept() {
+        let photo = TestSupport.photo("S", at: 0, analysis: TestSupport.analysis(sharpness: 5))
+        let decisions = SelectionEngine.decide(SelectionEngine.evaluate(scene: TestSupport.scene([photo])), strictness: 1, overrides: [:])
+        #expect(decisions[photo.id]?.keep == true)
+    }
+
+    @Test("Manuelles Aussortieren gilt auch für einzigartige Fotos")
+    func manualOverrideStillWorks() {
+        let a = TestSupport.photo("A", at: 0, analysis: TestSupport.analysis(sharpness: 900))
+        let b = TestSupport.photo("B", at: 1, analysis: TestSupport.analysis(sharpness: 50))
+        let evaluation = SelectionEngine.evaluate(scene: TestSupport.scene([a, b])) { _, _ in 0.9 }
+        let decisions = SelectionEngine.decide(evaluation, strictness: 1, overrides: [b.id: false])
+        #expect(decisions[b.id]?.keep == false)
+    }
+}

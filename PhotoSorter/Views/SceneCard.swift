@@ -37,7 +37,7 @@ struct SceneCard: View {
                 .font(.headline)
             Text(scene.startDate.formatted(date: .abbreviated, time: .standard))
                 .foregroundStyle(.secondary)
-            Text("· \(scene.photos.count) \(scene.photos.count == 1 ? "Foto" : "Fotos") · \(scene.category.title)")
+            Text("· \(scene.photos.count) \(scene.photos.count == 1 ? "Foto" : "Fotos") · \(ByteFormat.string(scene.photos.reduce(Int64(0)) { $0 + $1.byteSize })) · \(scene.category.title)")
                 .foregroundStyle(.secondary)
             if let evaluation = model.evaluations[scene.id], evaluation.isGroupScene {
                 let people = evaluation.tracks.filter(\.isSignificant).count
@@ -158,8 +158,6 @@ struct PhotoThumbView: View {
         }
         .frame(width: size, height: size * 0.75)
         .clipShape(RoundedRectangle(cornerRadius: 7))
-        .saturation(decision?.keep == false ? 0.5 : 1)
-        .opacity(decision?.keep == false ? 0.8 : 1)
         .overlay(alignment: .topLeading) {
             if decision?.isBest == true {
                 badge(Image(systemName: "star.fill"), color: .yellow)

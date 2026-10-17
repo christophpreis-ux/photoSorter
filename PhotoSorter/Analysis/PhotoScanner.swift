@@ -11,7 +11,7 @@ enum PhotoScanner {
 
     /// Liest den Ordner inklusive Unterordnern (z. B. bereits sortierte Abschnitts-Ordner) – „Terminiert“/„Aussortiert“ werden übersprungen.
     static func scan(folder: URL) throws -> [PhotoItem] {
-        let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .creationDateKey]
+        let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .creationDateKey, .fileSizeKey]
         _ = try FileManager.default.contentsOfDirectory(atPath: folder.path) // wirft, wenn der Ordner nicht lesbar ist
         guard let enumerator = FileManager.default.enumerator(at: folder, includingPropertiesForKeys: keys,
                                                               options: [.skipsHiddenFiles, .skipsPackageDescendants]) else { return [] }
@@ -39,7 +39,9 @@ enum PhotoScanner {
             let sidecars = group.filter { sidecarExtensions.contains(ext($0)) }
             let all = (images + raws + sidecars).sorted { $0.lastPathComponent < $1.lastPathComponent }
             let date = (try? primary.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? .distantPast
-            items.append(PhotoItem(baseName: base, files: all, primaryURL: primary, captureDate: date))
+            let item = PhotoItem(baseName: base, files: all, primaryURL: primary, captureDate: date)
+            item.byteSize = all.reduce(Int64(0)) { $0 + Int64((try? $1.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) }
+            items.append(item)
         }
         return items.sorted { $0.baseName.localizedStandardCompare($1.baseName) == .orderedAscending }
     }

@@ -97,6 +97,23 @@ struct FavoriteTests {
         #expect(model.decisions[photos[2].id]?.keep == false)
         #expect(model.favoriteCount == 1)
     }
+
+    @Test("Speicherplatz von Behaltenen und Aussortierten wird summiert")
+    func byteTotals() {
+        let photos = [600, 400, 80, 30].enumerated().map { index, sharpness -> PhotoItem in
+            let photo = TestSupport.photo("G\(index)", at: Double(index), analysis: TestSupport.analysis(sharpness: Double(sharpness)))
+            photo.byteSize = Int64(index + 1) * 1_000_000
+            return photo
+        }
+        let model = AppModel()
+        model.load(analyzedPhotos: photos, source: .folder(URL(fileURLWithPath: "/tmp")))
+        model.strictness = 1
+        let kept = photos.filter { model.decisions[$0.id]?.keep == true }.reduce(Int64(0)) { $0 + $1.byteSize }
+        #expect(model.keptBytes == kept)
+        #expect(model.keptBytes + model.rejectedBytes == 10_000_000)
+        #expect(model.rejectedBytes > 0)
+        if let chapter = model.chapters.first { #expect(model.keptBytes(of: chapter) == kept) }
+    }
 }
 
 @Suite("Oberfläche: Foto-Raster")

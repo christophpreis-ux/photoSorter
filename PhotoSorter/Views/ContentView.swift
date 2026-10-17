@@ -240,7 +240,7 @@ struct AppliedView: View {
                 .foregroundStyle(HUD.red)
             if let deleted = model.lastPhotosDeleted {
                 VStack(spacing: 6) {
-                    Text("\(deleted) Fotos terminiert – sie liegen in Apple Fotos unter „Zuletzt gelöscht“.")
+                    Text("\(deleted) Fotos (\(ByteFormat.string(model.rejectedBytes))) terminiert – sie liegen in Apple Fotos unter „Zuletzt gelöscht“.")
                     Text("\(model.favoriteCount) Favoriten wurden behalten. Gelöschte Fotos sind 30 Tage wiederherstellbar.")
                         .foregroundStyle(.secondary)
                 }
@@ -266,7 +266,7 @@ struct AppliedView: View {
             }
             if let result = model.lastResult {
                 VStack(spacing: 6) {
-                    Text("\(result.rejectedPhotos) Fotos wurden terminiert – also in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
+                    Text("\(result.rejectedPhotos) Fotos (\(ByteFormat.string(model.rejectedBytes))) wurden terminiert – also in den Ordner „\(FileOrganizer.rejectFolderName)“ verschoben.")
                     if result.sortedPhotos > 0 {
                         Text("\(result.sortedPhotos) behaltene Fotos wurden in \(model.chapters.count) Abschnitts-Ordner sortiert.")
                     }

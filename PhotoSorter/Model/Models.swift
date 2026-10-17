@@ -90,6 +90,8 @@ final class PhotoItem: Identifiable, Hashable, @unchecked Sendable {
     var analysis: PhotoAnalysis?
     /// Favorit in Apple Fotos – wird immer behalten.
     var isFavorite = false
+    /// Gesamtgröße aller Dateien des Fotos (RAW + JPEG + XMP) in Bytes.
+    var byteSize: Int64 = 0
 
     init(baseName: String, files: [URL], primaryURL: URL, captureDate: Date) {
         self.baseName = baseName
@@ -170,5 +172,11 @@ enum SceneFilter: String, CaseIterable, Identifiable {
         case .portraits: "Porträts"
         case .mergeable: "Kombinierbar"
         }
+    }
+}
+
+enum ByteFormat {
+    static func string(_ bytes: Int64) -> String {
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 }

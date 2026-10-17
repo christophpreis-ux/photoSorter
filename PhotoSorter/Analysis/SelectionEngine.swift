@@ -38,15 +38,21 @@ struct SceneEvaluation {
     let isGroupScene: Bool
     /// Paare fast identischer Fotos.
     let nearDuplicates: [UUID: [UUID]]
+    /// Fotos mit ähnlichem Motiv (Distanz unter `uniqueDistance` oder unbekannt).
+    /// Ein Foto ohne ähnliches behaltenes Foto ist einzigartig und wird nie automatisch aussortiert.
+    var similar: [UUID: Set<UUID>] = [:]
 }
 
 /// Bewertet Fotos und entscheidet je nach Strenge, welche behalten werden.
 enum SelectionEngine {
     static let duplicateDistance: Float = 0.12
+    /// Ab dieser Feature-Print-Distanz gilt ein Foto als eigenständiges Motiv.
+    static let uniqueDistance: Float = 0.4
 
     // MARK: - Bewertung (einmal pro Szene, unabhängig vom Schieberegler)
 
-    static func evaluate(scene: PhotoScene) -> SceneEvaluation {
+    static func evaluate(scene: PhotoScene,
+                         distance: (PhotoItem, PhotoItem) -> Float? = SceneGrouper.distance) -> SceneEvaluation {
         let photos = scene.photos
         let count = photos.count
         let tracks = buildTracks(photos)
@@ -153,20 +159,28 @@ enum SelectionEngine {
 
         let ranking = photos.map(\.id).sorted { (evaluations[$0]?.quality ?? 0) > (evaluations[$1]?.quality ?? 0) }
 
-        // Fast identische Fotos finden.
+        // Ähnliche und fast identische Fotos finden (bei sehr großen Szenen nur Nachbarn im Zeitverlauf).
         var duplicates: [UUID: [UUID]] = [:]
+        var similar: [UUID: Set<UUID>] = [:]
+        let window = count <= 400 ? count : 40
         for i in 0..<count {
-            for j in (i + 1)..<min(count, i + 25) where j < count {
-                if let d = SceneGrouper.distance(photos[i], photos[j]), d < duplicateDistance {
+            for j in (i + 1)..<min(count, i + window + 1) where j < count {
+                let d = distance(photos[i], photos[j])
+                if let d, d < duplicateDistance {
                     duplicates[photos[i].id, default: []].append(photos[j].id)
                     duplicates[photos[j].id, default: []].append(photos[i].id)
+                }
+                // Unbekannte Distanz (keine Analyse möglich): wie ähnlich behandeln – sie liegen ja in derselben Szene.
+                if d == nil || d! < uniqueDistance {
+                    similar[photos[i].id, default: []].insert(photos[j].id)
+                    similar[photos[j].id, default: []].insert(photos[i].id)
                 }
             }
         }
 
         let isGroup = mutableTracks.filter(\.isSignificant).count >= 2
         return SceneEvaluation(ranking: ranking, evaluations: evaluations, tracks: mutableTracks,
-                               isGroupScene: isGroup, nearDuplicates: duplicates)
+                               isGroupScene: isGroup, nearDuplicates: duplicates, similar: similar)
     }
 
     // MARK: - Entscheidung (bei jeder Bewegung des Schiebereglers)
@@ -186,13 +200,9 @@ enum SelectionEngine {
             keep = Set(ranking)
             ranking.forEach { reasons[$0] = "Strenge auf Minimum" }
         } else if ranking.count == 1 {
-            let bad = issues(bestID).contains(.blurry) || issues(bestID).contains(.eyesClosed)
-            if (s >= 0.6 && bad) || (s >= 0.85 && quality(bestID) < 0.4) {
-                reasons[bestID] = bad ? "Einzelfoto mit Mängeln: " + issueText(issues(bestID)) : "Einzelfoto mit geringer Qualität"
-            } else {
-                keep.insert(bestID)
-                reasons[bestID] = "Einzelfoto"
-            }
+            // Einzelfotos sind einzigartig – sie bleiben, auch wenn sie nicht perfekt sind.
+            keep.insert(bestID)
+            reasons[bestID] = issues(bestID).isEmpty ? "Einzelfoto" : "Einzelfoto – einzigartig, daher behalten"
         } else {
             keep.insert(bestID)
             reasons[bestID] = "Bestes Foto der Szene"
@@ -246,6 +256,19 @@ enum SelectionEngine {
             }
             extraIssues[pick] = nil
             uncovered.removeAll { $0.goodPhotos.contains(pick) }
+        }
+
+        // Einzigartige Motive: Wird keine ähnliche Aufnahme behalten, bleibt das Foto – egal wie scharf es ist.
+        // In Reihenfolge der Qualität, damit pro eigenständigem Motiv die beste Version gewählt wird.
+        if s > 0.001 {
+            for id in ranking where !keep.contains(id) {
+                let hasSimilarKept = eval.similar[id, default: []].contains { keep.contains($0) }
+                if !hasSimilarKept {
+                    keep.insert(id)
+                    reasons[id] = "Einzigartiges Motiv – keine ähnliche Aufnahme wird behalten"
+                    extraIssues[id] = nil
+                }
+            }
         }
 
         var decisions: [UUID: Decision] = [:]

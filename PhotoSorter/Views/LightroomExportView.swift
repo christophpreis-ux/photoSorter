@@ -59,7 +59,7 @@ struct LightroomExportView: View {
                 .foregroundStyle(Theme.accent)
             VStack(alignment: .leading, spacing: 2) {
                 Text("In Lightroom übertragen").font(.title2.bold())
-                Text("\(model.keptCount) behaltene Fotos · Presets pro Abschnitt – Vorschläge sind bereits ausgewählt.")
+                Text("\(model.keptCount) behaltene Fotos (\(ByteFormat.string(model.keptBytes))) · Presets pro Abschnitt – Vorschläge sind bereits ausgewählt.")
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -98,7 +98,7 @@ struct LightroomExportView: View {
                             .frame(width: 24)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(chapter.name).lineLimit(1)
-                            Text("\(model.photoCount(of: chapter).kept) Fotos · \(chapter.kind.title)")
+                            Text("\(model.photoCount(of: chapter).kept) Fotos · \(ByteFormat.string(model.keptBytes(of: chapter))) · \(chapter.kind.title)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

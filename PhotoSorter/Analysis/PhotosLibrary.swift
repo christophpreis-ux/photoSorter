@@ -64,14 +64,23 @@ enum PhotosLibrary {
         var items: [PhotoItem] = []
         let result = fetchResult(year: year, month: month)
         result.enumerateObjects { asset, _, _ in
-            let name = PHAssetResource.assetResources(for: asset).first?.originalFilename ?? asset.localIdentifier
+            let resources = PHAssetResource.assetResources(for: asset)
+            let name = resources.first?.originalFilename ?? asset.localIdentifier
             let item = PhotoItem(baseName: (name as NSString).deletingPathExtension, files: [],
                                  primaryURL: url(for: asset), captureDate: asset.creationDate ?? .distantPast)
             item.isFavorite = asset.isFavorite
+            item.byteSize = resources.reduce(Int64(0)) { $0 + fileSize(of: $1) }
             items.append(item)
             lock.withLock { assetCache[asset.localIdentifier] = asset }
         }
         return items
+    }
+
+    /// Dateigröße einer Ressource. PhotoKit bietet dafür keine offizielle API – daher vorsichtig per Key-Value-Coding,
+    /// nur wenn die Eigenschaft existiert (sonst 0, statt abzustürzen).
+    private static func fileSize(of resource: PHAssetResource) -> Int64 {
+        guard resource.responds(to: NSSelectorFromString("fileSize")) else { return 0 }
+        return (resource.value(forKey: "fileSize") as? NSNumber)?.int64Value ?? 0
     }
 
     // MARK: - URLs

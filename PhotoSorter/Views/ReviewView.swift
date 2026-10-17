@@ -80,8 +80,8 @@ struct ReviewView: View {
                         VStack(spacing: 10) {
                             ControlBar()
                             HStack(spacing: 12) {
-                                ColumnHeader(title: "Verschont", count: model.keptCount, symbol: "shield.lefthalf.filled", color: Theme.keep)
-                                ColumnHeader(title: "Terminieren", count: model.rejectedCount, symbol: "scope", color: Theme.reject)
+                                ColumnHeader(title: "Verschont", count: model.keptCount, bytes: model.keptBytes, symbol: "shield.lefthalf.filled", color: Theme.keep)
+                                ColumnHeader(title: "Terminieren", count: model.rejectedCount, bytes: model.rejectedBytes, symbol: "scope", color: Theme.reject)
                             }
                         }
                         .padding(14)
@@ -160,7 +160,7 @@ struct ChapterSidebar: View {
                         Label(chapter.name, systemImage: chapter.kind.symbol)
                             .lineLimit(1)
                         Spacer()
-                        Text("\(counts.kept)/\(counts.total)")
+                        Text("\(counts.kept)/\(counts.total) · \(ByteFormat.string(model.keptBytes(of: chapter)))")
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
@@ -205,7 +205,7 @@ struct ChapterHeader: View {
                     if let first = scenes.first?.startDate, let last = scenes.last?.photos.last?.captureDate {
                         Text("\(first.formatted(date: .abbreviated, time: .shortened)) – \(last.formatted(date: .omitted, time: .shortened))")
                     }
-                    Text("· \(counts.total) Fotos · \(counts.kept) behalten")
+                    Text("· \(counts.total) Fotos · \(counts.kept) behalten (\(ByteFormat.string(model.keptBytes(of: chapter))))")
                     if model.sortIntoChapterFolders && !model.isPhotosSource {
                         Label(model.folderName(for: chapter), systemImage: "folder")
                             .labelStyle(.titleAndIcon)
@@ -245,6 +245,7 @@ struct ChapterHeader: View {
 private struct ColumnHeader: View {
     let title: String
     let count: Int
+    let bytes: Int64
     let symbol: String
     let color: Color
 
@@ -257,6 +258,10 @@ private struct ColumnHeader: View {
                 .font(.headline.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .contentTransition(.numericText())
+            Text(ByteFormat.string(bytes))
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
             Spacer()
         }
         .padding(.horizontal, 12)
@@ -338,10 +343,10 @@ struct ControlBar: View {
                 Button("Abbrechen", role: .cancel) {}
             } message: {
                 if model.isPhotosSource {
-                    Text("\(model.rejectedCount) Fotos werden in Apple Fotos nach „Zuletzt gelöscht“ verschoben und sind dort 30 Tage wiederherstellbar. \(model.favoriteCount) Favoriten werden nicht angetastet.")
+                    Text("\(model.rejectedCount) Fotos (\(ByteFormat.string(model.rejectedBytes))) werden in Apple Fotos nach „Zuletzt gelöscht“ verschoben und sind dort 30 Tage wiederherstellbar. \(model.favoriteCount) Favoriten werden nicht angetastet.")
                 } else {
-                Text("\(model.rejectedCount) Fotos (\(model.rejectedFileCount) Dateien) werden in den Unterordner „\(FileOrganizer.rejectFolderName)“ verschoben – es wird nichts gelöscht."
-                     + (model.sortIntoChapterFolders ? " Die \(model.keptCount) behaltenen Fotos werden in \(model.chapters.count) Abschnitts-Ordner sortiert." : "")
+                Text("\(model.rejectedCount) Fotos (\(model.rejectedFileCount) Dateien, \(ByteFormat.string(model.rejectedBytes))) werden in den Unterordner „\(FileOrganizer.rejectFolderName)“ verschoben – es wird nichts gelöscht."
+                     + (model.sortIntoChapterFolders ? " Die \(model.keptCount) behaltenen Fotos (\(ByteFormat.string(model.keptBytes))) werden in \(model.chapters.count) Abschnitts-Ordner sortiert." : "")
                      + (model.renameKept ? " Dateinamen bekommen die Kategorie als Präfix." : ""))
                 }
             }
@@ -355,7 +360,7 @@ struct ControlBar: View {
         case ..<0.3: "Beschützer – nur klare Ausreißer"
         case ..<0.6: "Kampfmodus – ausgewogen"
         case ..<0.9: "T-1000 – streng"
-        default: "Judgment Day – nur das Beste überlebt"
+        default: "Judgment Day – nur das Beste je Motiv überlebt"
         }
     }
 }

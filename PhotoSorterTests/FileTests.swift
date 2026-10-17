@@ -31,6 +31,9 @@ struct FileTests {
         #expect(first.primaryURL.pathExtension == "jpg")   // JPEG wird für die Analyse bevorzugt
         #expect(first.hasRaw)
         #expect(items.first { $0.baseName == "IMG_2" }?.isRawPrimary == true)
+        // Dateigröße umfasst alle Dateien des Fotos (JPEG + RAW + XMP).
+        let jpegSize = try FileManager.default.attributesOfItem(atPath: root.appendingPathComponent("IMG_1.jpg").path)[.size] as! Int64
+        #expect(first.byteSize == jpegSize + 4 + 4)
     }
 
     @Test("Sortieren verschiebt, benennt um und lässt sich vollständig rückgängig machen")
