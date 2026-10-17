@@ -98,3 +98,26 @@ struct FavoriteTests {
         #expect(model.favoriteCount == 1)
     }
 }
+
+@Suite("Oberfläche: Foto-Raster")
+struct ThumbnailLayoutTests {
+    private let layout = ThumbnailFlowLayout(itemSize: CGSize(width: 100, height: 75), spacing: 8)
+
+    @Test("Unendliche, fehlende oder ungültige Breite führt nicht zum Absturz")
+    func nonFiniteWidths() {
+        for width: CGFloat? in [nil, .infinity, -.infinity, .nan, 0, -50] {
+            let size = layout.size(forCount: 7, proposedWidth: width)
+            #expect(size.width.isFinite && size.height.isFinite)
+            #expect(size.height > 0)
+        }
+        #expect(layout.columns(for: .infinity) == 1)
+        #expect(layout.columns(for: .nan) == 1)
+    }
+
+    @Test("Spalten und Höhe werden korrekt berechnet")
+    func normalWidths() {
+        #expect(layout.columns(for: 324) == 3)                     // 3 × 100 + 2 × 8 = 316
+        #expect(layout.size(forCount: 7, proposedWidth: 324).height == CGFloat(3 * 75 + 2 * 8))
+        #expect(layout.size(forCount: 0, proposedWidth: 324).height == 0)
+    }
+}

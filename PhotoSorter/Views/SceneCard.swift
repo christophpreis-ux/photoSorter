@@ -243,14 +243,23 @@ struct ThumbnailFlowLayout: Layout {
     var itemSize: CGSize
     var spacing: CGFloat
 
-    private func columns(for width: CGFloat) -> Int {
-        max(1, Int((width + spacing) / (itemSize.width + spacing)))
+    /// Spaltenzahl für eine Breite – robust gegen unendliche/ungültige Vorschläge (z. B. beim Messen der Mindestgröße).
+    func columns(for width: CGFloat) -> Int {
+        guard width.isFinite, width > 0, itemSize.width > 0 else { return 1 }
+        return max(1, Int((width + spacing) / (itemSize.width + spacing)))
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? (itemSize.width + spacing) * 4
-        guard !subviews.isEmpty else { return CGSize(width: width, height: 0) }
-        let rows = (subviews.count + columns(for: width) - 1) / columns(for: width)
+        size(forCount: subviews.count, proposedWidth: proposal.width)
+    }
+
+    /// Größe für eine Anzahl Bilder; ohne (endliche) Breite wird eine Zeile mit bis zu 4 Bildern angenommen.
+    func size(forCount count: Int, proposedWidth: CGFloat?) -> CGSize {
+        let fallback = (itemSize.width + spacing) * CGFloat(min(max(count, 1), 4)) - spacing
+        let width = proposedWidth.flatMap { $0.isFinite ? $0 : nil } ?? fallback
+        guard count > 0 else { return CGSize(width: width, height: 0) }
+        let perRow = columns(for: width)
+        let rows = (count + perRow - 1) / perRow
         return CGSize(width: width, height: CGFloat(rows) * itemSize.height + CGFloat(rows - 1) * spacing)
     }
 
