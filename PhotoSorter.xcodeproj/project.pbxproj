@@ -1,0 +1,381 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		051F84B5CDD475DAD9676D2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A59C0489112EDFD970F35513 /* ContentView.swift */; };
+		461BE97801E0312BFADD90BC /* SceneCompareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20D3944E08CDAF0D2B74A40 /* SceneCompareView.swift */; };
+		48317889485D35E0C94FA1E8 /* SceneGrouper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463642ADD8419350E014219C /* SceneGrouper.swift */; };
+		4D01CB8AD9DBF5B40944EB11 /* SelectionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 910243B43FA6C8AD3D109496 /* SelectionEngine.swift */; };
+		67FC02CE93F2C7A88BC415EA /* PhotoScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E09D1EA66374C985B2524166 /* PhotoScanner.swift */; };
+		85BFA583B85D832A748C33F2 /* SceneCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306A31B0EC7AEB0E861D0841 /* SceneCard.swift */; };
+		86638E4F99421254FA9BD195 /* PhotoSorterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8341521A254A32700C518C15 /* PhotoSorterApp.swift */; };
+		C728859DFD00FF1D08955DC9 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B26B95D229F4D728182247E /* AppModel.swift */; };
+		D0673582177FEFFDDB55E01F /* ImageAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F160294079F9AE1030D6482A /* ImageAnalyzer.swift */; };
+		DB256FE84E1A6CB066FC1415 /* ImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = A33AF12C11610D027F5F6EDF /* ImageCache.swift */; };
+		DFC348AB6E3BD6452EE4A075 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C316B7E019EDB1C93C79750 /* Models.swift */; };
+		E6A85CC561582830E60A7AA2 /* FileOrganizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C14664ADBD331A000CBDC3C /* FileOrganizer.swift */; };
+		E744CCAB34DAE2825500397C /* ReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5690A1B9091EA3DE3508BC53 /* ReviewView.swift */; };
+		FE569E716E57E35F13AE2F6E /* PhotoInspector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1EEE5DB5D1830962CB51A14 /* PhotoInspector.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		306A31B0EC7AEB0E861D0841 /* SceneCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCard.swift; sourceTree = "<group>"; };
+		463642ADD8419350E014219C /* SceneGrouper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneGrouper.swift; sourceTree = "<group>"; };
+		4C316B7E019EDB1C93C79750 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		5690A1B9091EA3DE3508BC53 /* ReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewView.swift; sourceTree = "<group>"; };
+		5B26B95D229F4D728182247E /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		8341521A254A32700C518C15 /* PhotoSorterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSorterApp.swift; sourceTree = "<group>"; };
+		910243B43FA6C8AD3D109496 /* SelectionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionEngine.swift; sourceTree = "<group>"; };
+		9C14664ADBD331A000CBDC3C /* FileOrganizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileOrganizer.swift; sourceTree = "<group>"; };
+		A33AF12C11610D027F5F6EDF /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		A59C0489112EDFD970F35513 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B20D3944E08CDAF0D2B74A40 /* SceneCompareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneCompareView.swift; sourceTree = "<group>"; };
+		CDFBE2A3FF97600642E99116 /* PhotoSorter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoSorter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E09D1EA66374C985B2524166 /* PhotoScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoScanner.swift; sourceTree = "<group>"; };
+		E1EEE5DB5D1830962CB51A14 /* PhotoInspector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInspector.swift; sourceTree = "<group>"; };
+		F160294079F9AE1030D6482A /* ImageAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageAnalyzer.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		04636258DF8BB1CEEE24AF43 /* Analysis */ = {
+			isa = PBXGroup;
+			children = (
+				9C14664ADBD331A000CBDC3C /* FileOrganizer.swift */,
+				F160294079F9AE1030D6482A /* ImageAnalyzer.swift */,
+				E09D1EA66374C985B2524166 /* PhotoScanner.swift */,
+				463642ADD8419350E014219C /* SceneGrouper.swift */,
+				910243B43FA6C8AD3D109496 /* SelectionEngine.swift */,
+			);
+			path = Analysis;
+			sourceTree = "<group>";
+		};
+		3F262D1734783D0F73799439 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				5B26B95D229F4D728182247E /* AppModel.swift */,
+				4C316B7E019EDB1C93C79750 /* Models.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		431B7DF35F49CEFEC4B66800 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8341521A254A32700C518C15 /* PhotoSorterApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		8FCADD7E40B8C54F694CC379 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CDFBE2A3FF97600642E99116 /* PhotoSorter.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		9675485EB35669A0661FFFFA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A59C0489112EDFD970F35513 /* ContentView.swift */,
+				A33AF12C11610D027F5F6EDF /* ImageCache.swift */,
+				E1EEE5DB5D1830962CB51A14 /* PhotoInspector.swift */,
+				5690A1B9091EA3DE3508BC53 /* ReviewView.swift */,
+				306A31B0EC7AEB0E861D0841 /* SceneCard.swift */,
+				B20D3944E08CDAF0D2B74A40 /* SceneCompareView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B04D19A9F0A1D3ED318C44A8 = {
+			isa = PBXGroup;
+			children = (
+				B5EB7401D6D318D908C900CC /* PhotoSorter */,
+				8FCADD7E40B8C54F694CC379 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B5EB7401D6D318D908C900CC /* PhotoSorter */ = {
+			isa = PBXGroup;
+			children = (
+				04636258DF8BB1CEEE24AF43 /* Analysis */,
+				431B7DF35F49CEFEC4B66800 /* App */,
+				3F262D1734783D0F73799439 /* Model */,
+				9675485EB35669A0661FFFFA /* Views */,
+			);
+			path = PhotoSorter;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F053565D80045438380787CF /* PhotoSorter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D4B01DF59830EF18B3B5A862 /* Build configuration list for PBXNativeTarget "PhotoSorter" */;
+			buildPhases = (
+				C8FD6111FA68A9BD457151BE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhotoSorter;
+			packageProductDependencies = (
+			);
+			productName = PhotoSorter;
+			productReference = CDFBE2A3FF97600642E99116 /* PhotoSorter.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		5027A90C0FA29FB8F0B2A3EC /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					F053565D80045438380787CF = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 1AE48F958F47513D9DCA9836 /* Build configuration list for PBXProject "PhotoSorter" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B04D19A9F0A1D3ED318C44A8;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8FCADD7E40B8C54F694CC379 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F053565D80045438380787CF /* PhotoSorter */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C8FD6111FA68A9BD457151BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C728859DFD00FF1D08955DC9 /* AppModel.swift in Sources */,
+				051F84B5CDD475DAD9676D2C /* ContentView.swift in Sources */,
+				E6A85CC561582830E60A7AA2 /* FileOrganizer.swift in Sources */,
+				D0673582177FEFFDDB55E01F /* ImageAnalyzer.swift in Sources */,
+				DB256FE84E1A6CB066FC1415 /* ImageCache.swift in Sources */,
+				DFC348AB6E3BD6452EE4A075 /* Models.swift in Sources */,
+				FE569E716E57E35F13AE2F6E /* PhotoInspector.swift in Sources */,
+				67FC02CE93F2C7A88BC415EA /* PhotoScanner.swift in Sources */,
+				86638E4F99421254FA9BD195 /* PhotoSorterApp.swift in Sources */,
+				E744CCAB34DAE2825500397C /* ReviewView.swift in Sources */,
+				85BFA583B85D832A748C33F2 /* SceneCard.swift in Sources */,
+				461BE97801E0312BFADD90BC /* SceneCompareView.swift in Sources */,
+				48317889485D35E0C94FA1E8 /* SceneGrouper.swift in Sources */,
+				4D01CB8AD9DBF5B40944EB11 /* SelectionEngine.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		26535BB7415BCFE9218908DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PhotoSorter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorter;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		3F29C2FFB3C6040896C635DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		7A33D2DEDEFA78593A803BCB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		F1243DF9A80D0BE62D4CBF1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = PhotoSorter;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = de.photosorter.PhotoSorter;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1AE48F958F47513D9DCA9836 /* Build configuration list for PBXProject "PhotoSorter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3F29C2FFB3C6040896C635DD /* Debug */,
+				7A33D2DEDEFA78593A803BCB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D4B01DF59830EF18B3B5A862 /* Build configuration list for PBXNativeTarget "PhotoSorter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				26535BB7415BCFE9218908DD /* Debug */,
+				F1243DF9A80D0BE62D4CBF1E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 5027A90C0FA29FB8F0B2A3EC /* Project object */;
+}
